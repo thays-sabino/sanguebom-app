@@ -1,70 +1,57 @@
-# Getting Started with Create React App
+# Sangue Bom 🩸
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema de gerenciamento de doações de sangue, pensado como parte do próprio Hemocentro de Juiz de Fora. A plataforma conecta o Hemocentro, os doadores e os hospitais/clínicas, ajudando a manter o estoque de sangue sob controle.
 
-## Available Scripts
+Projeto acadêmico desenvolvido na disciplina de Linguagem de Programação II (Instituto Federal do Sudeste de Minas Gerais, Campus Juiz de Fora).
 
-In the project directory, you can run:
+## Sobre o projeto
 
-### `npm start`
+Hoje, o controle de estoque, a convocação de doadores e o atendimento de pedidos de hospitais e clínicas dependem de processos pouco integrados. O Sangue Bom propõe um único sistema para:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- convocar doadores compatíveis quando o estoque de um tipo sanguíneo está em alerta ou crítico;
+- acompanhar o histórico de doações e a data da próxima doação habilitada;
+- receber e responder pedidos de sangue de hospitais e clínicas;
+- dar ao Hemocentro uma visão clara dos níveis de estoque por tipo sanguíneo.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Perfis de usuário
 
-### `npm test`
+- **Doador:** cadastro, histórico de doações, pedidos compatíveis com seu tipo sanguíneo e gerenciamento do próprio perfil.
+- **Hemocentro:** controle de estoque, criação de convocações, registro de doações realizadas e análise de pedidos de hospitais e clínicas.
+- **Hospital/Clínica:** cadastro institucional, solicitação de sangue e acompanhamento do histórico de pedidos.
+- **Administrador:** gestão geral dos usuários e correção de dados cadastrais.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Tecnologias
 
-### `npm run build`
+- React (projeto iniciado com Create React App)
+- json-server, como back-end simulado durante esta etapa do projeto
+- Figma, para o protótipo das telas
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Como executar
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Pré-requisito: ter o Node.js instalado.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Clone este repositório e entre na pasta do projeto.
+2. Instale as dependências com `npm install`.
+3. Inicie o projeto com `npm start`. O navegador abre automaticamente e a página recarrega sozinha a cada alteração.
 
-### `npm run eject`
+Outros scripts disponíveis:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- `npm test`: executa os testes em modo interativo.
+- `npm run build`: gera a versão otimizada para produção na pasta `build`.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Status
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Em desenvolvimento. Nesta etapa o foco é o front-end, usando um back-end simulado. O banco de dados real será desenvolvido em um próximo semestre.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Equipe
 
-## Learn More
+- [Thays Sabino](https://github.com/thays-sabino)
+- [Sophia Marques](https://github.com/Sophia-Marques16)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Contexto acadêmico
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Projeto desenvolvido para fins educacionais. Os dados utilizados são fictícios.
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Este projeto foi iniciado com [Create React App](https://github.com/facebook/create-react-app).
