@@ -78,6 +78,13 @@ function Navbar(props) {
               label='Solicitações'
             />
           </ul>
+          <ul className='navbar-nav'>
+            <NavbarItem
+              render='true'
+              href='/listagem-doacoes'
+              label='Doações'
+            />
+          </ul>
         </div>
       </div>
     </div>
