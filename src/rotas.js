@@ -8,6 +8,7 @@ import ListagemAdms from './views/listagem-adms';
 import ListagemTipoSanguineo from './views/listagem-tipoSanguineo';
 import ListagemConvocacoes from './views/listagem-convocacoes';
 import ListagemSolicitacoes from './views/listagem-solicitacoes';
+import ListagemDoacoes from './views/listagem-doacoes';
 
 
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
@@ -47,6 +48,10 @@ function Rotas(props) {
         <Route
           path='/listagem-solicitacoes/'
           element={<ListagemSolicitacoes />}
+        />
+        <Route
+          path='/listagem-doacoes/'
+          element={<ListagemDoacoes />}
         />
       </Routes>
     </BrowserRouter>
