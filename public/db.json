@@ -1,0 +1,66 @@
+{
+  "usuarios": [
+    { "id": 1, "nome": "Adm 1", "email": "usuario1@email.com", "senha": "1", "senhaRepeticao": "1", "status": true },
+    { "id": 2, "nome": "Adm 2",  "email": "usuario2@email.com", "senha": "1", "senhaRepeticao": "1", "status": true },
+    { "id": 3, "nome": "Adm 3", "email": "usuario3@email.com", "senha": "1", "senhaRepeticao": "1", "status": true },
+    { "id": 4, "nome": "Doador 1", "email": "usuario4@email.com", "senha": "1", "senhaRepeticao": "1", "status": false },
+    { "id": 5, "nome": "Doador 2", "email": "usuario5@email.com", "senha": "1", "senhaRepeticao": "1", "status": false },
+    { "id": 6, "nome": "Doador 3", "email": "usuario6@email.com", "senha": "1", "senhaRepeticao": "1", "status": false },
+    { "id": 7, "nome": "Hemocentro 1","email": "usuario7@email.com", "senha": "1", "senhaRepeticao": "1", "status": false },
+    { "id": 8, "nome": "Hemocentro 3","email": "usuario8@email.com", "senha": "1", "senhaRepeticao": "1", "status": true },
+    { "id": 9, "nome": "Hemocentro 3","email": "usuario9@email.com", "senha": "1", "senhaRepeticao": "1", "status": false },
+    { "id": 10, "nome": "Instituição 1","email": "usuario10@email.com", "senha": "1", "senhaRepeticao": "1", "status": true },
+    { "id": 11, "nome": "Instituição 2","email": "usuario11@email.com", "senha": "1", "senhaRepeticao": "1", "status": false },
+    { "id": 12, "nome": "Instituição 3","email": "usuario12@email.com", "senha": "1", "senhaRepeticao": "1", "status": true }
+  ],
+   "adms": [
+    { "id": 1, "idUsuario": 1 },
+    { "id": 2, "idUsuario": 2 },
+    { "id": 3, "idUsuario": 3 }
+  ],
+  "doadores": [
+    { "id": 1, "nome": "Doador 1", "cpf": "111111111", "dtNasc": "01/01/2000", "sexo": "feminino", "celular": "1111-1111", "tipoS": "A+" , "idUsuario": 4 },
+    { "id": 2, "nome": "Doador 2", "cpf": "111111111", "dtNasc": "01/01/2000", "sexo": "masculino", "celular": "2222-2222", "tipoS": "A+" , "idUsuario": 5 },
+    { "id": 3, "nome": "Doador 3", "cpf": "111111111", "dtNasc": "01/01/2000", "sexo": "masculino", "celular": "3333-3333", "tipoS": "A+" , "idUsuario": 6 }
+  ],
+  "hemocentros": [
+    { "id": 1, "idUsuario": 7 },
+    { "id": 2, "idUsuario": 8 },
+    { "id": 3, "idUsuario": 9 }
+  ],
+  "instituicoes": [
+    { "id": 1, "razaoSocial": "Instituicao 1", "cnpj": "11111111111111", "responsavelTec":"Responsavel 1", "cpfRT": "111111111", "telefone": "1111-1111", "idUsuario": 10 },
+    { "id": 2, "razaoSocial": "Instituicao 2", "cnpj": "11111111111111", "responsavelTec":"Responsavel 2", "cpfRT": "111111111", "telefone": "2222-2222", "idUsuario": 11 },
+    { "id": 3, "razaoSocial": "Instituicao 3", "cnpj": "11111111111111", "responsavelTec":"Responsavel 3", "cpfRT": "111111111", "telefone": "3333-3333", "idUsuario": 12 }
+  ],
+  "tipoS": [
+    { "id": 1, "tipo": "A+" },
+    { "id": 2, "tipo": "A-" },
+    { "id": 3, "tipo": "B+" },
+    { "id": 4, "tipo": "B-" },
+    { "id": 5, "tipo": "AB+" },
+    { "id": 6, "tipo": "AB-" },
+    { "id": 7, "tipo": "O+" },
+    { "id": 8, "tipo": "O-" }
+  ],
+  "convocacoes":[
+    { "id": 1, "tipoS": "A+", "urgencia": "critico", "status": "finalizada", "idUsuario": 7 },
+    { "id": 2, "tipoS": "A+", "urgencia": "estavel", "status": "finalizada", "idUsuario": 8 },
+    { "id": 3, "tipoS": "O-", "urgencia": "alerta", "status": "ativa", "idUsuario": 9 }
+  ],
+  "estoques":[
+    { "id": 1, "tipoS": "A+", "qtdMl": "2250", "idUsuario": 7 },
+    { "id": 2, "tipoS": "B+", "qtdMl": "6750", "idUsuario": 8 },
+    { "id": 3, "tipoS": "A-", "qtdMl": "2250", "idUsuario": 9 }
+  ],
+  "solicitacoes":[
+    {"id": 1, "tipoS": "A+", "qtdSolicitada": "1000", "qtdLiberada": "1000", "urgencia": "critico", "status": "finalizada", "idUsuario": 7, "idUsuario": 10 },
+    {"id": 2, "tipoS": "B+", "qtdSolicitada": "1000", "qtdLiberada": "850", "urgencia": "alerta", "status": "finalizada", "idUsuario": 8, "idUsuario": 11 },
+    {"id": 3, "tipoS": "A+", "qtdSolicitada": "1000", "qtdLiberada": "1000", "urgencia": "critico", "status": "finalizada", "idUsuario": 9, "idUsuario": 12 }
+  ],
+  "doacoes":[
+    {"id": 1, "tipoS": "A+", "qtdDoada": "1000", "idUsuario": 7, "idUsuario": 4 },
+    {"id": 2, "tipoS": "B+", "qtdDoada": "850", "idUsuario": 8, "idUsuario": 5 },
+    {"id": 3, "tipoS": "A+", "qtdDoada": "1000", "idUsuario": 9, "idUsuario": 6 }
+  ]
+}
