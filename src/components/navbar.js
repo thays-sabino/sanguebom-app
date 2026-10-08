@@ -60,7 +60,7 @@ function Navbar(props) {
           <ul className='navbar-nav'>
             <NavbarItem
               render='true'
-              href='/listagem-tipoSanguineo'
+              href='/listagem-tipoS'
               label='Tipo Sanguíneo'
             />
           </ul>
@@ -83,6 +83,13 @@ function Navbar(props) {
               render='true'
               href='/listagem-doacoes'
               label='Doações'
+            />
+          </ul>
+          <ul className='navbar-nav'>
+            <NavbarItem
+              render='true'
+              href='/listagem-estoques'
+              label='Estoques'
             />
           </ul>
         </div>
