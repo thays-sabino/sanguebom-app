@@ -5,11 +5,11 @@ import ListagemDoadores from './views/listagem-doadores';
 import ListagemHemocentros from './views/listagem-hemocentros';
 import ListagemInstituicoes from './views/listagem-instituicoes';
 import ListagemAdms from './views/listagem-adms';
-import ListagemTipoSanguineo from './views/listagem-tipoSanguineo';
+import ListagemTipoS from './views/listagem-tipoS';
 import ListagemConvocacoes from './views/listagem-convocacoes';
 import ListagemSolicitacoes from './views/listagem-solicitacoes';
 import ListagemDoacoes from './views/listagem-doacoes';
-
+import ListagemEstoques from './views/listagem-estoques';
 
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
@@ -38,8 +38,8 @@ function Rotas(props) {
           element={<ListagemAdms />}
         />
         <Route
-          path='/listagem-tipoSanguineo/'
-          element={<ListagemTipoSanguineo />}
+          path='/listagem-tipoS/'
+          element={<ListagemTipoS />}
         />
         <Route
           path='/listagem-convocacoes/'
@@ -52,6 +52,10 @@ function Rotas(props) {
         <Route
           path='/listagem-doacoes/'
           element={<ListagemDoacoes />}
+        />
+        <Route
+          path='/listagem-estoques/'
+          element={<ListagemEstoques />}
         />
       </Routes>
     </BrowserRouter>
