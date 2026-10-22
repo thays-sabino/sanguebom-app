@@ -11,12 +11,31 @@ import ListagemSolicitacoes from './views/listagem-solicitacoes';
 import ListagemDoacoes from './views/listagem-doacoes';
 import ListagemEstoques from './views/listagem-estoques';
 
+import CadastroUsuarios from './views/cadastro-usuario';
+import CadastroTipoS from './views/cadastro-tipoS';
+
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
 function Rotas(props) {
   return (
     <BrowserRouter>
       <Routes>
+        <Route
+          path='/cadastro-usuarios/'
+          element={<CadastroUsuarios />}
+        />
+        <Route
+          path='/cadastro-usuarios/:idParam'
+          element={<CadastroUsuarios />}
+        />
+        <Route
+          path='/cadastro-tipoS/'
+          element={<CadastroTipoS />}
+        />
+        <Route
+          path='/cadastro-tipoS/:idParam'
+          element={<CadastroTipoS />}
+        />
         <Route
           path='/listagem-usuarios/'
           element={<ListagemUsuarios />}
