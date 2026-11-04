@@ -1,1 +1,1 @@
-export const BASE_URL = 'https://sanguebom-api.onrender.com';
+export const BASE_URL = 'https://sanguebom-api-ouyw.onrender.com';
