@@ -36,6 +36,13 @@ function CadastroEstoques() {
     }
 
     function inicializar() {
+        const estaVazio = !tipoS && !qtdMl && !idHemocentro; // Verifica se os campos estão vazios
+
+        if(estaVazio){ // Se esta vazio volta para a pagina anterior
+            navigate(-1);
+            return;
+        }
+        
         if (idParam == null) {
             preencher({});
         } else if (dados) {
