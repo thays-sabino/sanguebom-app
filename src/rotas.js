@@ -89,11 +89,11 @@ function Rotas(props) {
           element={<ListagemHemocentros />}
         />
         <Route
-          path='/cadastro-hemocentros/'
+          path='/cadastro-hemocentro/'
           element={<CadastroHemocentros />}
         />
         <Route
-          path='/cadastro-hemocentros/:idParam'
+          path='/cadastro-hemocentro/:idParam'
           element={<CadastroHemocentros />}
         />
 
@@ -145,11 +145,11 @@ function Rotas(props) {
           element={<ListagemEstoques />}
         />
         <Route
-          path='/cadastro-estoques/'
+          path='/cadastro-estoque/'
           element={<CadastroEstoques />}
         />
         <Route
-          path='/cadastro-estoques/:idParam'
+          path='/cadastro-estoque/:idParam'
           element={<CadastroEstoques />}
         />
 
