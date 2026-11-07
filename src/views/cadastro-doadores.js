@@ -49,7 +49,14 @@ function CadastroDoadores() {
     }
 
     function inicializar() {
-        if (idParam == null) {
+        const estaVazio = !nome && !email && !senha &&!senha && !cpf && !dtNasc && !sexo && !celular && !tipoS; // Verifica se os campos estão vazios
+
+        if(estaVazio){ // Se esta vazio volta para a pagina anterior
+            navigate(-1);
+            return;
+        }
+        
+        if (idParam == null) { // Caso contrario, limpa os campos
             preencher({});
         } else if (dados) {
             preencher(dados);
