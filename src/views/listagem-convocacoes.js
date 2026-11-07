@@ -77,10 +77,10 @@ function ListagemConvocacoes() {
                 <thead>
                   <tr>
                     <th scope='col'>ID</th>
-                    <th scope='col'>Tipo Sanguíneo</th>
-                    <th scope='col'>Urgência</th>
-                    <th scope='col'>Status</th>
                     <th scope='col'>Hemocentro</th>
+                    <th scope='col'>Urgência</th>
+                     <th scope='col'>Tipo Sanguíneo</th>
+                    <th scope='col'>Status</th>
                     <th scope='col'>Ações</th>
                   </tr>
                 </thead>
@@ -88,10 +88,12 @@ function ListagemConvocacoes() {
                   {convocacoes.map((convocacao) => (
                     <tr key={convocacao.id}>
                       <td>{convocacao.id}</td>
-                      <td>{convocacao.tipoS}</td>
-                      <td>{convocacao.urgencia}</td>
-                      <td>{convocacao.status}</td>
                       <td>{nomeHemocentro(convocacao.idHemocentro)}</td>
+                      <td>{convocacao.urgencia}</td>
+
+                      <td>{convocacao.tipoS}</td>
+                      
+                      <td>{convocacao.status}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
