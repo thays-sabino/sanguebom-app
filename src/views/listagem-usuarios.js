@@ -61,7 +61,6 @@ function ListagemUsuarios() {
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th scope='col'>ID</th>
                     <th scope='col'>E-mail</th>
                     <th scope='col'>Senha</th>
                     <th scope='col'>Perfil</th>
@@ -72,7 +71,6 @@ function ListagemUsuarios() {
                 <tbody>
                   {usuarios.map((usuario) => (
                     <tr key={usuario.id}>
-                      <td>{usuario.id}</td>
                       <td>{usuario.email}</td>
                       <td>{usuario.senha}</td>
                       <td>{usuario.perfil}</td>
