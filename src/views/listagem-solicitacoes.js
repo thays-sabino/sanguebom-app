@@ -77,13 +77,11 @@ function ListagemSolicitacoes() {
                 <thead>
                   <tr>
                     <th scope='col'>ID</th>
-                    <th scope='col'>Tipo</th>
-                    <th scope='col'>Quantidade Solicitada</th>
-                    <th scope='col'>Quantidade Liberada</th>
-                    <th scope='col'>Urgência</th>
-                    <th scope='col'>Status</th>
-                    <th scope='col'>Hemocentro</th>
                     <th scope='col'>Instituição</th>
+                    <th scope='col'>Hemocentro</th>
+                    <th scope='col'>Tipo Sanguíneo</th>
+                    <th scope='col'>Urgência</th>
+                    <th scope='col'>Quantidade Solicitada</th>
                     <th scope='col'>Ações</th>
                   </tr>
                 </thead>
@@ -91,13 +89,13 @@ function ListagemSolicitacoes() {
                   {solicitacoes.map((solicitacao) => (
                     <tr key={solicitacao.id}>
                       <td>{solicitacao.id}</td>
-                      <td>{solicitacao.tipoS}</td>
-                      <td>{solicitacao.qtdSolicitada}</td>
-                      <td>{solicitacao.qtdLiberada}</td>
-                      <td>{solicitacao.urgencia}</td>
-                      <td>{solicitacao.status}</td>
-                      <td>{nomeHemocentro(solicitacao.idHemocentro)}</td>
                       <td>{nomeInstituicao(solicitacao.idInstituicao)}</td>
+                      <td>{nomeHemocentro(solicitacao.idHemocentro)}</td>
+
+                      <td>{solicitacao.tipoS}</td>
+
+                      <td>{solicitacao.urgencia}</td>
+                      <td>{solicitacao.qtdSolicitada}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
