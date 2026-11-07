@@ -74,20 +74,21 @@ function ListagemEstoques() {
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th scope='col'>ID</th>
-                    <th scope='col'>Tipo</th>
-                    <th scope='col'>Quantidade Ml</th>
                     <th scope='col'>Hemocentro</th>
+                    <th scope='col'>Tipo Sanguíneo</th>
+                    <th scope='col'>Quantidade Ml</th>
                     <th scope='col'>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {estoques.map((estoque) => (
                     <tr key={estoque.id}>
-                      <td>{estoque.id}</td>
-                      <td>{estoque.tipoS}</td>
-                      <td>{estoque.qtdMl}</td>
                       <td>{nomeHemocentro(estoque.idHemocentro)}</td>
+
+                      <td>{estoque.tipoS}</td>
+
+                      <td>{estoque.qtdMl}</td>
+                      
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
