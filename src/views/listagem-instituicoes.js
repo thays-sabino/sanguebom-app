@@ -67,13 +67,12 @@ function ListagemInstituicoes() {
                 <table className='table table-hover'>
                   <thead>
                     <tr>
-                      <th scope='col'>ID</th>
-                      <th scope='col'>Nome</th>
-                      <th scope='col'>E-mail</th>
                       <th scope='col'>Razão Social</th>
                       <th scope='col'>CNPJ</th>
+                      <th scope='col'>E-mail</th>
                       <th scope='col'>Responsável Técnico</th>
                       <th scope='col'>CPF - Responsável Téc.</th>
+                      <th scope='col'>Endereço</th>
                       <th scope='col'>Telefone</th>
                       <th scope='col'>Ações</th>
                     </tr>
@@ -81,13 +80,12 @@ function ListagemInstituicoes() {
                   <tbody>
                     {instituicoes.map((instituicao) => (
                       <tr key={instituicao.id}>
-                        <td>{instituicao.id}</td>
-                        <td>{instituicao.nome}</td>
-                        <td>{instituicao.email}</td>
                         <td>{instituicao.razaoSocial}</td>
                         <td>{instituicao.cnpj}</td>
+                        <td>{instituicao.email}</td>
                         <td>{instituicao.responsavelTec}</td>
                         <td>{instituicao.cpfRT}</td>
+                        <td>{instituicao.logradouro}, n° {instituicao.numero} - {instituicao.bairro}, {instituicao.cidade} - {instituicao.uf}, CEP: {instituicao.cep}</td>
                         <td>{instituicao.telefone}</td>
                         <td>
                           <Stack spacing={1} padding={0} direction='row'>
