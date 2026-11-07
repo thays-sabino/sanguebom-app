@@ -64,7 +64,7 @@ function ListagemAdms() {
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th scope='col'>Nome</th>
+                    <th scope='col'>Login</th>
                     <th scope='col'>E-mail</th>
                     <th scope='col'>Ações</th>
                   </tr>
@@ -72,7 +72,7 @@ function ListagemAdms() {
                 <tbody>
                   {adms.map((adm) => (
                     <tr key={adm.id}>
-                      <td>{adm.nome}</td>
+                      <td>{adm.login}</td>
                       <td>{adm.email}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
