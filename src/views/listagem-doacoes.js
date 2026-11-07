@@ -85,10 +85,11 @@ function ListagemDoacoes() {
                 <thead>
                   <tr>
                     <th scope='col'>ID</th>
-                    <th scope='col'>Tipo Sanguíneo</th>
-                    <th scope='col'>Quantidade Doada</th>
                     <th scope='col'>Hemocentro</th>
                     <th scope='col'>Doador</th>
+                    <th scope='col'>Data</th>
+                    <th scope='col'>Tipo Sanguíneo</th>
+                    <th scope='col'>Quantidade Doada</th>
                     <th scope='col'>Ações</th>
                   </tr>
                 </thead>
@@ -96,10 +97,13 @@ function ListagemDoacoes() {
                   {doacoes.map((doacao) => (
                     <tr key={doacao.id}>
                       <td>{doacao.id}</td>
-                      <td>{doacao.tipoS}</td>
-                      <td>{doacao.qtdDoada}</td>
                       <td>{nomeHemocentro(doacao.idHemocentro)}</td>
                       <td>{nomeDoador(doacao.idDoador)}</td>
+                      <td>{doacao.dtDoacao}</td>
+
+                      <td>{doacao.tipoS}</td>
+
+                      <td>{doacao.qtdDoada}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
