@@ -26,6 +26,13 @@ function CadastroTipoS() {
   const [dados, setDados] = useState(null);
 
   function inicializar() {
+    const estaVazio = !tipo; // Verifica se os campos estão vazios
+
+        if(estaVazio){ // Se esta vazio volta para a pagina anterior
+            navigate(-1);
+            return;
+        }
+    
     if (idParam == null) {
       setId('');
       setTipo('');
