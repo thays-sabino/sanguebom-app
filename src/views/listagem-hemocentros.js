@@ -16,6 +16,7 @@ import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
 const baseURL = `${BASE_URL}/hemocentros`;
+const usuariosURL = `${BASE_URL}/usuarios`; // URL PARA BUSCAR USUARIOS --> PARA PEGAR O EMAIL
 
 function ListagemHemocentros() {
   const navigate = useNavigate();
@@ -29,10 +30,15 @@ function ListagemHemocentros() {
   };
 
   const [hemocentros, setHemocentros] = useState([]);
+  const [usuarios, setUsuarios] = useState([]); // PARA GUARDAR A LISTA DE USUARIOS
 
   useEffect(() => {
-    axios.get(baseURL).then((response) => {
+    axios.get(baseURL).then((response) => { 
       setHemocentros(response.data);
+    });
+
+    axios.get(usuariosURL).then((response) => { // PARA BUSCAR USUARIOS QUANDO A PAGINA ABRE 
+      setUsuarios(response.data);
     });
   }, []);
 
@@ -64,18 +70,27 @@ function ListagemHemocentros() {
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th scope='col'>ID</th>
-                    <th scope='col'>Nome</th>
+                    <th scope='col'>Razão Social</th>
+                    <th scope='col'>CNPJ</th>
                     <th scope='col'>E-mail</th>
+                    <th scope='col'>Endereço</th>
+                    <th scope='col'>Telefone</th>
                     <th scope='col'>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {hemocentros.map((hemocentro) => (
+                  {hemocentros.map((hemocentro) => {
+                    const usuarioEncontrado = usuarios.find(
+                      (u) => u.id === hemocentro.idUsuario
+                    );
+                   
+                  return (
                     <tr key={hemocentro.id}>
-                      <td>{hemocentro.id}</td>
-                      <td>{hemocentro.nome}</td>
-                      <td>{hemocentro.email}</td>
+                      <td>{hemocentro.razaoSocial}</td>
+                      <td>{hemocentro.cnpj}</td>
+                      <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
+                      <td>{hemocentro.logradouro}, n° {hemocentro.numero} - {hemocentro.bairro}, {hemocentro.cidade} - {hemocentro.uf}, CEP: {hemocentro.cep}</td>
+                      <td>{hemocentro.telefone}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
@@ -93,7 +108,8 @@ function ListagemHemocentros() {
                         </Stack>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })} 
                 </tbody>
               </table>
             </div>
