@@ -56,7 +56,6 @@ function ListagemDoadores() {
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th scope='col'>ID</th>
                     <th scope='col'>Nome</th>
                     <th scope='col'>E-mail</th>
                     <th scope='col'>CPF</th>
@@ -70,7 +69,6 @@ function ListagemDoadores() {
                 <tbody>
                   {doadores.map((doador) => (
                     <tr key={doador.id}>
-                      <td>{doador.id}</td>
                       <td>{doador.nome}</td>
                       <td>{doador.email}</td>
                       <td>{doador.cpf}</td>
