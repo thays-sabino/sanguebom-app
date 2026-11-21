@@ -54,6 +54,9 @@ function Rotas(props) {
         <Route
           path='/cadastro-usuario/'
           element={<CadastroUsuarios />} />
+        <Route
+          path='/cadastro-usuario/:idParam'
+          element={<CadastroUsuarios />} />
 
         {/* Administradores */}
         <Route
