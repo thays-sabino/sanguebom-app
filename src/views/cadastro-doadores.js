@@ -28,7 +28,7 @@ function CadastroDoadores() {
     const [dtNasc, setDtNasc] = useState('');
     const [sexo, setSexo] = useState('');
     const [celular, setCelular] = useState('');
-    const [tipoS, setTipoS] = useState('');
+    const [idTipoS, setIdTipoS] = useState('');
 
     const [tipos, setTipos] = useState([]);
 
@@ -36,20 +36,52 @@ function CadastroDoadores() {
 
     const senhasDiferentes = senhaRepeticao !== '' && senha !== senhaRepeticao;
 
+    const hoje = new Date();
+    const dataMax = new Date(hoje.getFullYear() - 16, hoje.getMonth(), hoje.getDate())
+        .toISOString()
+        .split('T')[0];
+    const dataMin = new Date(hoje.getFullYear() - 69, hoje.getMonth(), hoje.getDate())
+        .toISOString()
+        .split('T')[0];
+
+    // Converte "01/01/2000" (db.json) -> "2000-01-01" (input type="date")
+    function paraISO(dataBR) {
+        if (!dataBR) return '';
+        if (dataBR.includes('-')) return dataBR; // caso já esteja em ISO
+        const [dia, mes, ano] = dataBR.split('/');
+        if (!dia || !mes || !ano) return '';
+        return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    }
+
+    // Converte "2000-01-01" (input type="date") -> "01/01/2000" (db.json)
+    function paraBR(dataISO) {
+        if (!dataISO) return '';
+        if (dataISO.includes('/')) return dataISO; // caso já esteja em BR
+        const [ano, mes, dia] = dataISO.split('-');
+        if (!ano || !mes || !dia) return '';
+        return `${dia}/${mes}/${ano}`;
+    }
+
     function preencher(doador) {
         setNome(doador.nome ?? '');
         setEmail(doador.email ?? '');
         setSenha(doador.senha ?? '');
         setSenhaRepeticao(doador.senhaRepeticao ?? '');
         setCpf(doador.cpf ?? '');
-        setDtNasc(doador.dtNasc ?? '');
+        setDtNasc(paraISO(doador.dtNasc ?? ''));
         setSexo(doador.sexo ?? '');
         setCelular(doador.celular ?? '');
-        setTipoS(doador.tipoS ?? '');
+        setIdTipoS(doador.idTipoS != null ? String(doador.idTipoS): '');
     }
 
     function inicializar() {
-        const estaVazio = !nome && !email && !senha &&!senha && !cpf && !dtNasc && !sexo && !celular && !tipoS; // Verifica se os campos estão vazios
+        // Volta para a página anterior na edição
+        if (idParam != null){
+            navigate(-1);
+            return;
+        }
+        
+        const estaVazio = !nome && !email && !senha && !senhaRepeticao && !cpf && !dtNasc && !sexo && !celular && !idTipoS; // Verifica se os campos estão vazios
 
         if(estaVazio){ // Se esta vazio volta para a pagina anterior
             navigate(-1);
@@ -71,7 +103,7 @@ function CadastroDoadores() {
             !dtNasc ||
             !sexo ||
             !celular ||
-            !tipoS ||
+            !idTipoS ||
             (idParam == null && !senha)
         ) {
             mensagemAlert('Preencha todos os campos obrigatórios.');
@@ -87,10 +119,10 @@ function CadastroDoadores() {
                 senha,
                 senhaRepeticao,
                 cpf,
-                dtNasc,
+                dtNasc: paraBR(dtNasc),
                 sexo,
                 celular,
-                tipoS,
+                idTipoS: Number(idTipoS),
             };
 
             await axios
@@ -120,7 +152,7 @@ function CadastroDoadores() {
                 dtNasc,
                 sexo,
                 celular,
-                tipoS,
+                idTipoS: Number(idTipoS),
             };
 
             await axios
@@ -147,21 +179,24 @@ function CadastroDoadores() {
         const response = await axios.get(`${baseURL}/${idParam}`);
         const doador = response.data;
 
+        let emailAtual = doador.email ?? '';
         let senhaAtual = doador.senha ?? '';
         let repeticaoAtual = doador.senhaRepeticao ?? '';
 
         // Só no fake: a senha de um doador antigo fica em usuarios.
         // Com o backend real, apagar este bloco.
-        if (!senhaAtual && doador.idUsuario) {
+        if ((!emailAtual || !senhaAtual) && doador.idUsuario) {
             const usuario = await axios.get(
                 `${BASE_URL}/usuarios/${doador.idUsuario}`
             );
-            senhaAtual = usuario.data.senha ?? '';
-            repeticaoAtual = usuario.data.senhaRepeticao ?? '';
+            emailAtual = emailAtual || (usuario.data.email ?? '');
+            senhaAtual = senhaAtual || (usuario.data.senha ?? '');
+            repeticaoAtual = repeticaoAtual || (usuario.data.senhaRepeticao ?? '');
         }
 
         const completo = {
             ...doador,
+            email: emailAtual,
             senha: senhaAtual,
             senhaRepeticao: repeticaoAtual,
         };
@@ -180,121 +215,151 @@ function CadastroDoadores() {
         buscar();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idParam]);
-
+    
     return (
-        <div className='container'>
+        <div className='container tema-principal'>
             <Card title='Cadastro de Doador'>
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
-                            <FormGroup label='Nome: *' htmlFor='inputNome'>
-                                <input
-                                    type='text'
-                                    id='inputNome'
-                                    value={nome}
-                                    className='form-control'
-                                    name='nome'
-                                    onChange={(e) => setNome(e.target.value)}
-                                />
-                            </FormGroup>
-                            <FormGroup label='E-mail: *' htmlFor='inputEmail'>
-                                <input
-                                    type='email'
-                                    id='inputEmail'
-                                    value={email}
-                                    className='form-control'
-                                    name='email'
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                            </FormGroup>
-                            <FormGroup label='Senha: *' htmlFor='inputSenha'>
-                                <input
-                                    type='password'
-                                    id='inputSenha'
-                                    value={senha}
-                                    className='form-control'
-                                    name='senha'
-                                    onChange={(e) => setSenha(e.target.value)}
-                                />
-                            </FormGroup>
-                            <FormGroup
-                                label='Repita a Senha: *'
-                                htmlFor='inputSenhaRepeticao'
-                            >
-                                <input
-                                    type='password'
-                                    id='inputSenhaRepeticao'
-                                    value={senhaRepeticao}
-                                    className='form-control'
-                                    name='senhaRepeticao'
-                                    onChange={(e) => setSenhaRepeticao(e.target.value)}
-                                />
-                                {senhasDiferentes && (
-                                    <small className='text-danger'>
-                                        As senhas não conferem.
-                                    </small>
-                                )}
-                            </FormGroup>
-                            <FormGroup label='CPF: *' htmlFor='inputCpf'>
-                                <input
-                                    type='text'
-                                    id='inputCpf'
-                                    value={cpf}
-                                    className='form-control'
-                                    name='cpf'
-                                    onChange={(e) => setCpf(e.target.value)}
-                                />
-                            </FormGroup>
-                            <FormGroup label='Data de Nascimento: *' htmlFor='inputDtNasc'>
-                                <input
-                                    type='text'
-                                    id='inputDtNasc'
-                                    value={dtNasc}
-                                    placeholder='dd/mm/aaaa'
-                                    className='form-control'
-                                    name='dtNasc'
-                                    onChange={(e) => setDtNasc(e.target.value)}
-                                />
-                            </FormGroup>
-                            <FormGroup label='Sexo: *' htmlFor='inputSexo'>
-                                <select
-                                    id='inputSexo'
-                                    value={sexo}
-                                    className='form-control'
-                                    name='sexo'
-                                    onChange={(e) => setSexo(e.target.value)}
-                                >
-                                    <option value=''>Selecione</option>
-                                    <option value='feminino'>Feminino</option>
-                                    <option value='masculino'>Masculino</option>
-                                </select>
-                            </FormGroup>
-                            <FormGroup label='Celular: *' htmlFor='inputCelular'>
-                                <input
-                                    type='text'
-                                    id='inputCelular'
-                                    value={celular}
-                                    className='form-control'
-                                    name='celular'
-                                    onChange={(e) => setCelular(e.target.value)}
-                                />
-                            </FormGroup>
-                            <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
-                                <select
-                                    id='inputTipoS'
-                                    value={tipoS}
-                                    className='form-control'
-                                    name='tipoS'
-                                    onChange={(e) => setTipoS(e.target.value)}
-                                >
-                                    <option value=''>Selecione</option>
-                                    {tipos.map((tipo) => (
-                                        <option key={tipo.id} value={tipo.tipo}>
-                                            {tipo.tipo}
-                                        </option>
-                                    ))}
-                                </select>
-                            </FormGroup>
+
+                            <div className='row'>
+                                <div className='col-md-6'>
+                                    <FormGroup label='Nome: *' htmlFor='inputNome'>
+                                        <input
+                                            type='text'
+                                            id='inputNome'
+                                            value={nome}
+                                            className='form-control'
+                                            name='nome'
+                                            onChange={(e) => setNome(e.target.value)}
+                                        />
+                                    </FormGroup>
+                                </div>
+                                <div className='col-md-6'>
+                                    <FormGroup label='CPF: *' htmlFor='inputCpf'>
+                                        <input
+                                            type='text'
+                                            id='inputCpf'
+                                            value={cpf}
+                                            className='form-control'
+                                            name='cpf'
+                                            onChange={(e) => setCpf(e.target.value)}
+                                        />
+                                    </FormGroup>
+                                </div>
+                            </div>
+
+                            <div className='row'>
+                                <div className='col-md-4'>
+                                    <FormGroup label='Data de Nascimento: *' htmlFor='inputDtNasc'>
+                                        <input
+                                            type='date'
+                                            id='inputDtNasc'
+                                            value={dtNasc}
+                                            min={dataMin}
+                                            max={dataMax}
+                                            className='form-control'
+                                            name='dtNasc'
+                                            onChange={(e) => setDtNasc(e.target.value)}
+                                            onClick={(e) => e.target.showPicker?.()}
+                                        />
+                                    </FormGroup>
+                                </div>
+                                <div className='col-md-4'>
+                                    <FormGroup label='Sexo: *' htmlFor='inputSexo'>
+                                        <select
+                                            id='inputSexo'
+                                            value={sexo}
+                                            className='form-control'
+                                            name='sexo'
+                                            onChange={(e) => setSexo(e.target.value)}
+                                        >
+                                            <option value=''>Selecione</option>
+                                            <option value='feminino'>Feminino</option>
+                                            <option value='masculino'>Masculino</option>
+                                        </select>
+                                    </FormGroup>
+                                </div>
+                                <div className='col-md-4'>
+                                    <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
+                                        <select
+                                            id='inputTipoS'
+                                            value={String(idTipoS)}
+                                            className='form-control'
+                                            name='idTipoS'
+                                            onChange={(e) => setIdTipoS(e.target.value)}
+                                        >
+                                            <option value=''>Selecione</option>
+                                            {tipos.map((tipo) => (
+                                                <option key={tipo.id} value={String(tipo.id)}>
+                                                    {tipo.tipo}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </FormGroup>
+                                </div>
+                            </div>
+
+                            <div className='row'>
+                                <div className='col-md-6'>
+                                    <FormGroup label='E-mail: *' htmlFor='inputEmail'>
+                                        <input
+                                            type='email'
+                                            id='inputEmail'
+                                            value={email}
+                                            className='form-control'
+                                            name='email'
+                                            onChange={(e) => setEmail(e.target.value)}
+                                        />
+                                    </FormGroup>
+                                </div>
+                                <div className='col-md-6'>
+                                    <FormGroup label='Celular: *' htmlFor='inputCelular'>
+                                        <input
+                                            type='text'
+                                            id='inputCelular'
+                                            value={celular}
+                                            className='form-control'
+                                            name='celular'
+                                            onChange={(e) => setCelular(e.target.value)}
+                                        />
+                                    </FormGroup>
+                                </div>
+                            </div>
+
+                            <hr className='my-4' />
+                            <div className='row'>
+                                <div className='col-md-6'>
+                                    <FormGroup label='Senha: *' htmlFor='inputSenha'>
+                                        <input
+                                            type='password'
+                                            id='inputSenha'
+                                            value={senha}
+                                            className='form-control'
+                                            name='senha'
+                                            onChange={(e) => setSenha(e.target.value)}
+                                        />
+                                    </FormGroup>
+                                </div>
+                                <div className='col-md-6'>
+                                    <FormGroup label='Repita a Senha: *' htmlFor='inputSenhaRepeticao'>
+                                        <input
+                                            type='password'
+                                            id='inputSenhaRepeticao'
+                                            value={senhaRepeticao}
+                                            className='form-control'
+                                            name='senhaRepeticao'
+                                            onChange={(e) => setSenhaRepeticao(e.target.value)}
+                                        />
+                                        {senhasDiferentes && (
+                                            <small className='text-danger'>
+                                                As senhas não conferem.
+                                            </small>
+                                        )}
+                                    </FormGroup>
+                                </div>
+                            </div>
                             <Stack spacing={1} padding={1} direction='row'>
                                 <button
                                     onClick={salvar}
