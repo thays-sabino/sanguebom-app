@@ -20,7 +20,7 @@ function CadastroDoacoes() {
 
   const baseURL = `${BASE_URL}/doacoes`;
 
-  const [tipoS, setTipoS] = useState('');
+  const [dtDoacao, setDtDoacao] = useState('');
   const [qtdDoada, setQtdDoada] = useState('');
   const [idHemocentro, setIdHemocentro] = useState('');
   const [idDoador, setIdDoador] = useState('');
@@ -31,15 +31,43 @@ function CadastroDoacoes() {
 
   const [dados, setDados] = useState(null);
 
+  // Converte "01/01/2026" (db.json) -> "2026-01-01" (input type="date")
+  function paraISO(dataBR) {
+    if (!dataBR) return '';
+    if (dataBR.includes('-')) return dataBR;
+    const [dia, mes, ano] = dataBR.split('/');
+    if (!dia || !mes || !ano) return '';
+    return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+  }
+
+  // Converte "2026-01-01" (input type="date") -> "01/01/2026" (db.json)
+  function paraBR(dataISO) {
+    if (!dataISO) return '';
+    if (dataISO.includes('/')) return dataISO;
+    const [ano, mes, dia] = dataISO.split('-');
+    if (!ano || !mes || !dia) return '';
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  // descobre o tipo sanguineo do doador
+  const doadorSelecionado = doadores.find((d) => String(d.id) === String(idDoador));
+  const tipoDoador = doadorSelecionado ? tipos.find((t) => String(t.id) === String(doadorSelecionado.idTipoS)): null;
+
   function preencher(doacao) {
-    setTipoS(doacao.tipoS ?? '');
+    setDtDoacao(doacao.dtDoacao ?? '');
     setQtdDoada(doacao.qtdDoada ?? '');
-    setIdHemocentro(doacao.idHemocentro ?? '');
-    setIdDoador(doacao.idDoador ?? '');
+    setIdHemocentro(doacao.idHemocentro != null ? String(doacao.idHemocentro) : '');
+    setIdDoador(doacao.idDoador != null ? String(doacao.idDoador) : '');
   }
 
   function inicializar() {
-    const estaVazio = !tipoS && !qtdDoada && !idHemocentro &&!idDoador; // Verifica se os campos estão vazios
+    // Volta para a página anterior na edição
+        if (idParam != null){
+            navigate(-1);
+            return;
+        }
+    
+    const estaVazio = !dtDoacao && !qtdDoada && !idHemocentro &&!idDoador; // Verifica se os campos estão vazios
 
         if(estaVazio){ // Se esta vazio volta para a pagina anterior
             navigate(-1);
@@ -54,12 +82,12 @@ function CadastroDoacoes() {
   }
 
   async function salvar() {
-    if (!tipoS || !qtdDoada || !idHemocentro || !idDoador) {
+    if (!dtDoacao || !qtdDoada || !idHemocentro || !idDoador) {
       mensagemAlert('Preencha todos os campos obrigatórios.');
       return;
     }
 
-    const data = { tipoS, qtdDoada, idHemocentro, idDoador };
+    const data = { dtDoacao: paraBR(dtDoacao), qtdDoada, idHemocentro: Number(idHemocentro), idDoador: Number(idDoador), };
 
     if (idParam == null) {
       await axios
@@ -125,26 +153,64 @@ function CadastroDoacoes() {
   }, [idParam]);
 
   return (
-    <div className='container'>
+    <div className='container tema-principal'>
       <Card title='Cadastro de Doação'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
+              <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
                 <select
-                  id='inputTipoS'
-                  value={tipoS}
+                  id='inputHemocentro'
+                  value={String(idHemocentro)}
                   className='form-control'
-                  name='tipoS'
-                  onChange={(e) => setTipoS(e.target.value)}
+                  name='idHemocentro'
+                  onChange={(e) =>
+                    setIdHemocentro(e.target.value)}
                 >
                   <option value=''>Selecione</option>
-                  {tipos.map((tipo) => (
-                    <option key={tipo.id} value={tipo.tipo}>
-                      {tipo.tipo}
+                  {hemocentros.map((hemocentro) => (
+                    <option key={hemocentro.id} value={hemocentro.id}>
+                      {hemocentro.razaoSocial}
                     </option>
                   ))}
                 </select>
+              </FormGroup>
+              <FormGroup label='Doador: *' htmlFor='inputDoador'>
+                <select
+                  id='inputDoador'
+                  value={String(idDoador)}
+                  className='form-control'
+                  name='idDoador'
+                  onChange={(e) => setIdDoador(e.target.value)}
+                >
+                  <option value=''>Selecione</option>
+                  {doadores.map((doador) => (
+                    <option key={doador.id} value={String(doador.id)}>
+                      {doador.nome}
+                    </option>
+                  ))}
+                </select>
+              </FormGroup>
+              <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
+                <input
+                  type='text'
+                  id='inputTipoS'
+                  value={tipoDoador ? tipoDoador.tipo : ''}
+                  placeholder='Preenchido automaticamente pelo doador'
+                  className='form-control'
+                  disabled
+                />
+              </FormGroup>
+              <FormGroup label='Data da Doação: *' htmlFor='inptDtDoacao'>
+                <input
+                  type='date'
+                  id='inputDtDoacao'
+                  value={dtDoacao}
+                  className='form-control'
+                  name='dtDoacao'
+                  onChange={(e) => setDtDoacao(e.target.value)}
+                  onClick={(e) => e.target.showPicker?.()}
+                />
               </FormGroup>
               <FormGroup label='Quantidade Doada (ml): *' htmlFor='inputQtdDoada'>
                 <input
@@ -156,46 +222,6 @@ function CadastroDoacoes() {
                   name='qtdDoada'
                   onChange={(e) => setQtdDoada(e.target.value)}
                 />
-              </FormGroup>
-              <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
-                <select
-                  id='inputHemocentro'
-                  value={idHemocentro}
-                  className='form-control'
-                  name='idHemocentro'
-                  onChange={(e) =>
-                    setIdHemocentro(
-                      e.target.value === '' ? '' : Number(e.target.value)
-                    )
-                  }
-                >
-                  <option value=''>Selecione</option>
-                  {hemocentros.map((hemocentro) => (
-                    <option key={hemocentro.id} value={hemocentro.id}>
-                      {hemocentro.nome}
-                    </option>
-                  ))}
-                </select>
-              </FormGroup>
-              <FormGroup label='Doador: *' htmlFor='inputDoador'>
-                <select
-                  id='inputDoador'
-                  value={idDoador}
-                  className='form-control'
-                  name='idDoador'
-                  onChange={(e) =>
-                    setIdDoador(
-                      e.target.value === '' ? '' : Number(e.target.value)
-                    )
-                  }
-                >
-                  <option value=''>Selecione</option>
-                  {doadores.map((doador) => (
-                    <option key={doador.id} value={doador.id}>
-                      {doador.nome}
-                    </option>
-                  ))}
-                </select>
               </FormGroup>
               <Stack spacing={1} padding={1} direction='row'>
                 <button
