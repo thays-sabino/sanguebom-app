@@ -10,6 +10,8 @@ import Card from '../components/card';
 
 import '../custom.css';
 
+import { mensagemSucesso, mensagemErro } from '../components/toastr';
+
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
@@ -29,6 +31,7 @@ function ListagemSolicitacoes() {
   const [solicitacoes, setSolicitacoes] = useState([]);
   const [hemocentros, setHemocentros] = useState([]);
   const [instituicoes, setInstituicoes] = useState([]);
+  const [tipoS, setTipoS] = useState([]);
 
   useEffect(() => {
     axios.get(baseURL).then((response) => {
@@ -42,26 +45,47 @@ function ListagemSolicitacoes() {
     axios.get(`${BASE_URL}/instituicoes`).then((response) => {
       setInstituicoes(response.data);
     });
+
+    axios.get(`${BASE_URL}/tipoS`).then((response) => {
+      setTipoS(response.data);
+    });
   }, []);
 
   function nomeHemocentro(idHemocentro) {
-    const hemocentro = hemocentros.find((h) => h.id === idHemocentro);
-    return hemocentro ? hemocentro.nome : '';
+    const hemocentro = hemocentros.find(
+      (h) => String(h.id) === String(idHemocentro)
+    );
+    return hemocentro ? hemocentro.razaoSocial : '';
   }
 
   function nomeInstituicao(idInstituicao) {
-    const instituicao = instituicoes.find((i) => i.id === idInstituicao);
-    return instituicao ? instituicao.nome : '';
+    const instituicao = instituicoes.find(
+      (i) => String(i.id) === String(idInstituicao)
+    );
+    return instituicao ? instituicao.razaoSocial : '';
+  }
+
+  function nomeTipoS(idTipoS) {
+    const tipo = tipoS.find((t) => String(t.id) === String(idTipoS));
+    return tipo ? tipo.tipo : '';
   }
 
   async function excluir(id) {
-    await axios.delete(`${baseURL}/${id}`).then(() => {
-      setSolicitacoes(solicitacoes.filter((solicitacao) => solicitacao.id !== id));
-    });
+    await axios
+      .delete(`${baseURL}/${id}`)
+      .then(() => {
+        setSolicitacoes(
+          solicitacoes.filter((solicitacao) => solicitacao.id !== id)
+        );
+        mensagemSucesso('Solicitação excluída com sucesso!');
+      })
+      .catch(() => {
+        mensagemErro('Erro ao excluir a solicitação.');
+      });
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Solicitações'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -73,49 +97,53 @@ function ListagemSolicitacoes() {
               >
                 Novo Cadastro
               </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>ID</th>
-                    <th scope='col'>Instituição</th>
-                    <th scope='col'>Hemocentro</th>
-                    <th scope='col'>Tipo Sanguíneo</th>
-                    <th scope='col'>Urgência</th>
-                    <th scope='col'>Quantidade Solicitada</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {solicitacoes.map((solicitacao) => (
-                    <tr key={solicitacao.id}>
-                      <td>{solicitacao.id}</td>
-                      <td>{nomeInstituicao(solicitacao.idInstituicao)}</td>
-                      <td>{nomeHemocentro(solicitacao.idHemocentro)}</td>
-
-                      <td>{solicitacao.tipoS}</td>
-
-                      <td>{solicitacao.urgencia}</td>
-                      <td>{solicitacao.qtdSolicitada}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(solicitacao.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(solicitacao.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>ID</th>
+                      <th scope='col'>Instituição</th>
+                      <th scope='col'>Hemocentro</th>
+                      <th scope='col'>Tipo Sanguíneo</th>
+                      <th scope='col'>Urgência</th>
+                      <th scope='col'>Quantidade Solicitada</th>
+                      <th scope='col'>Status</th>
+                      <th scope='col'>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {solicitacoes.map((solicitacao) => (
+                      <tr key={solicitacao.id}>
+                        <td>{solicitacao.id}</td>
+                        <td>{nomeInstituicao(solicitacao.idInstituicao)}</td>
+                        <td>{nomeHemocentro(solicitacao.idHemocentro)}</td>
+
+                        <td>{nomeTipoS(solicitacao.idTipoS)}</td>
+
+                        <td>{solicitacao.urgencia}</td>
+                        <td>{solicitacao.qtdSolicitada}</td>
+                        <td>{solicitacao.status}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(solicitacao.id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(solicitacao.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
