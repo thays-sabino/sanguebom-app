@@ -30,6 +30,7 @@ function ListagemEstoques() {
 
   const [estoques, setEstoques] = useState([]);
   const [hemocentros, setHemocentros] = useState([]);
+  const [tipoS, setTipoS] = useState([]);
 
   useEffect(() => {
     axios.get(baseURL).then((response) => {
@@ -39,11 +40,20 @@ function ListagemEstoques() {
     axios.get(`${BASE_URL}/hemocentros`).then((response) => {
       setHemocentros(response.data);
     });
+
+    axios.get(`${BASE_URL}/tipoS`).then((response) => {
+      setTipoS(response.data);
+    });
   }, []);
 
   function nomeHemocentro(idHemocentro) {
-    const hemocentro = hemocentros.find((h) => h.id === idHemocentro);
-    return hemocentro ? hemocentro.nome : '';
+    const hemocentro = hemocentros.find((h) => String(h.id) === String(idHemocentro));
+    return hemocentro ? hemocentro.razaoSocial : '';
+  }
+
+  function nomeTipoS(idTipoS) {
+    const tipo = tipoS.find((t) => String(t.id) === String(idTipoS));
+    return tipo ? tipo.tipo : '';
   }
 
   async function excluir(id) {
@@ -59,7 +69,7 @@ function ListagemEstoques() {
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Estoques'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -71,44 +81,43 @@ function ListagemEstoques() {
               >
                 Novo Cadastro
               </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>Hemocentro</th>
-                    <th scope='col'>Tipo Sanguíneo</th>
-                    <th scope='col'>Quantidade Ml</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {estoques.map((estoque) => (
-                    <tr key={estoque.id}>
-                      <td>{nomeHemocentro(estoque.idHemocentro)}</td>
-
-                      <td>{estoque.tipoS}</td>
-
-                      <td>{estoque.qtdMl}</td>
-                      
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(estoque.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(estoque.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>Hemocentro</th>
+                      <th scope='col'>Tipo Sanguíneo</th>
+                      <th scope='col'>Quantidade Ml</th>
+                      <th scope='col'>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {estoques.map((estoque) => (
+                      <tr key={estoque.id}>
+                        <td>{nomeHemocentro(estoque.idHemocentro)}</td>
+                        <td>{nomeTipoS(estoque.idTipoS)}</td>
+                        <td>{estoque.qtdMl}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(estoque.id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(estoque.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
