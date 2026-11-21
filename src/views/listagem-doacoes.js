@@ -31,6 +31,7 @@ function ListagemDoacoes() {
   const [doacoes, setDoacoes] = useState([]);
   const [hemocentros, setHemocentros] = useState([]);
   const [doadores, setDoadores] = useState([]);
+  const [tipoS, setTipoS] = useState([]);
 
   useEffect(() => {
     axios.get(baseURL).then((response) => {
@@ -44,16 +45,28 @@ function ListagemDoacoes() {
     axios.get(`${BASE_URL}/doadores`).then((response) => {
       setDoadores(response.data);
     });
+
+    axios.get(`${BASE_URL}/tipoS`).then((response) => {
+      setTipoS(response.data);
+    });
   }, []);
 
   function nomeHemocentro(idHemocentro) {
-    const hemocentro = hemocentros.find((h) => h.id === idHemocentro);
-    return hemocentro ? hemocentro.nome : '';
+    const hemocentro = hemocentros.find((h) => String(h.id) === String(idHemocentro));
+    return hemocentro ? hemocentro.razaoSocial : '';
   }
 
   function nomeDoador(idDoador) {
-    const doador = doadores.find((d) => d.id === idDoador);
+    const doador = doadores.find((d) => String(d.id) === String(idDoador));
     return doador ? doador.nome : '';
+  }
+
+  function nomeTipoSanguineo(idDoador) {
+    const doador = doadores.find((d) => String(d.id) === String(idDoador));
+    if (!doador) return '';
+
+    const tipo = tipoS.find((t) => String(t.id) === String(doador.idTipoS));
+    return tipo ? tipo.tipo : '';
   }
 
   async function excluir(id) {
@@ -69,7 +82,7 @@ function ListagemDoacoes() {
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Doações'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -81,49 +94,49 @@ function ListagemDoacoes() {
               >
                 Novo Cadastro
               </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>ID</th>
-                    <th scope='col'>Hemocentro</th>
-                    <th scope='col'>Doador</th>
-                    <th scope='col'>Data</th>
-                    <th scope='col'>Tipo Sanguíneo</th>
-                    <th scope='col'>Quantidade Doada</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {doacoes.map((doacao) => (
-                    <tr key={doacao.id}>
-                      <td>{doacao.id}</td>
-                      <td>{nomeHemocentro(doacao.idHemocentro)}</td>
-                      <td>{nomeDoador(doacao.idDoador)}</td>
-                      <td>{doacao.dtDoacao}</td>
-
-                      <td>{doacao.tipoS}</td>
-
-                      <td>{doacao.qtdDoada}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(doacao.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(doacao.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>ID</th>
+                      <th scope='col'>Hemocentro</th>
+                      <th scope='col'>Doador</th>
+                      <th scope='col'>Data</th>
+                      <th scope='col'>Tipo Sanguíneo</th>
+                      <th scope='col'>Quantidade Doada</th>
+                      <th scope='col'>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {doacoes.map((doacao) => (
+                      <tr key={doacao.id}>
+                        <td>{doacao.id}</td>
+                        <td>{nomeHemocentro(doacao.idHemocentro)}</td>
+                        <td>{nomeDoador(doacao.idDoador)}</td>
+                        <td>{doacao.dtDoacao}</td>
+                        <td>{nomeTipoSanguineo(doacao.idDoador)}</td>
+                        <td>{doacao.qtdDoada}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(doacao.id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(doacao.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
