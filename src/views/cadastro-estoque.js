@@ -20,7 +20,7 @@ function CadastroEstoques() {
 
     const baseURL = `${BASE_URL}/estoques`;
 
-    const [tipoS, setTipoS] = useState('');
+    const [idTipoS, setIdTipoS] = useState('');
     const [qtdMl, setQtdMl] = useState('');
     const [idHemocentro, setIdHemocentro] = useState('');
 
@@ -30,13 +30,19 @@ function CadastroEstoques() {
     const [dados, setDados] = useState(null);
 
     function preencher(estoque) {
-        setTipoS(estoque.tipoS ?? '');
+        setIdTipoS(estoque.idTipoS != null ? String(estoque.idTipoS) : '');
         setQtdMl(estoque.qtdMl ?? '');
-        setIdHemocentro(estoque.idHemocentro ?? '');
+        setIdHemocentro(estoque.idHemocentro != null ? String(estoque.idHemocentro) : '');
     }
 
     function inicializar() {
-        const estaVazio = !tipoS && !qtdMl && !idHemocentro; // Verifica se os campos estão vazios
+        // Volta para a página anterior na edição
+        if (idParam != null){
+            navigate(-1);
+            return;
+        }
+        
+        const estaVazio = !idTipoS && !qtdMl && !idHemocentro; // Verifica se os campos estão vazios
 
         if(estaVazio){ // Se esta vazio volta para a pagina anterior
             navigate(-1);
@@ -51,12 +57,12 @@ function CadastroEstoques() {
     }
 
     async function salvar() {
-        if (!tipoS || qtdMl === '' || !idHemocentro) {
+        if (!idTipoS || qtdMl === '' || !idHemocentro) {
             mensagemAlert('Preencha todos os campos obrigatórios.');
             return;
         }
 
-        const data = { tipoS, qtdMl, idHemocentro };
+        const data = { idTipoS: Number(idTipoS), qtdMl, idHemocentro: Number(idHemocentro), };
 
         if (idParam == null) {
             await axios
@@ -119,22 +125,40 @@ function CadastroEstoques() {
     }, [idParam]);
 
     return (
-        <div className='container'>
+        <div className='container tema-principal'>
             <Card title='Cadastro de Estoque'>
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
+                             <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
+                                <select
+                                    id='inputHemocentro'
+                                    value={String(idHemocentro)}
+                                    className='form-control'
+                                    name='idHemocentro'
+                                    onChange={(e) =>
+                                        setIdHemocentro(e.target.value)
+                                    }
+                                >
+                                    <option value=''>Selecione</option>
+                                    {hemocentros.map((hemocentro) => (
+                                        <option key={hemocentro.id} value={String(hemocentro.id)}>
+                                            {hemocentro.razaoSocial}
+                                        </option>
+                                    ))}
+                                </select>
+                            </FormGroup>
                             <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
                                 <select
                                     id='inputTipoS'
-                                    value={tipoS}
+                                    value={String(idTipoS)}
                                     className='form-control'
-                                    name='tipoS'
-                                    onChange={(e) => setTipoS(e.target.value)}
+                                    name='idTipoS'
+                                    onChange={(e) => setIdTipoS(e.target.value)}
                                 >
                                     <option value=''>Selecione</option>
                                     {tipos.map((tipo) => (
-                                        <option key={tipo.id} value={tipo.tipo}>
+                                        <option key={tipo.id} value={String(tipo.id)}>
                                             {tipo.tipo}
                                         </option>
                                     ))}
@@ -151,27 +175,7 @@ function CadastroEstoques() {
                                     onChange={(e) => setQtdMl(e.target.value)}
                                 />
                             </FormGroup>
-                            <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
-                                <select
-                                    id='inputHemocentro'
-                                    value={idHemocentro}
-                                    className='form-control'
-                                    name='idHemocentro'
-                                    onChange={(e) =>
-                                        setIdHemocentro(
-                                            e.target.value === '' ? '' : Number(e.target.value)
-                                        )
-                                    }
-                                >
-                                    <option value=''>Selecione</option>
-                                    {hemocentros.map((hemocentro) => (
-                                        <option key={hemocentro.id} value={hemocentro.id}>
-                                            {hemocentro.nome}
-                                        </option>
-                                    ))}
-                                </select>
-                            </FormGroup>
-                            <Stack spacing={1} padding={1} direction='row'>
+                           <Stack spacing={1} padding={1} direction='row'>
                                 <button
                                     onClick={salvar}
                                     type='button'
