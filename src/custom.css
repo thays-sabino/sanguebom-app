@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
 body {
   padding-top: 120px;
 }
@@ -244,4 +246,244 @@ pre {
     margin-bottom: 2em;
     text-align: center;
   }
+}
+
+.fonte-anton {
+  font-family: 'Anton', sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.fonte-inter {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.fonte-manrope {
+  font-family: 'Manrope', sans-serif !important;
+}
+
+/* Tema 1: Home, Doadores e Instituições (#DD0F0E) */
+.tema-principal {
+  font-family: 'Inter', sans-serif;
+}
+.tema-principal .btn-vermelho {
+  --bs-btn-bg: #DD0F0E; /*Cor de fundo normal*/
+  --bs-btn-border-color: #DD0F0E; /*Cor da borda normal*/
+  --bs-btn-hover-bg: #9e0a09; /*Para hover*/
+  --bs-btn-hover-border-color: #9e0a09; /*Para hover*/
+  --bs-btn-active-bg: #850807; /*Para botao presionado*/
+  --bs-btn-active-border-color: #850807; /*Para botao presionado*/
+  --bs-btn-focus-shadow-rgb: 221, 15, 14;
+  background-color: #DD0F0E !important;
+  border-color: #DD0F0E !important;
+}
+.tema-principal .texto-vermelho {
+  color: #DD0F0E !important;
+}
+
+/*Hover para botao vermelho - tema principal*/
+.tema-principal .btn-vermelho:hover{
+  background-color: #a80b0a !important;
+  border-color: #a80b0a !important;
+  color: #FFFFFF !important;
+}
+
+/* Tema 2: Solicitações, Convocações e Estoque (#E5322D) */
+.tema-secundario {
+  font-family: 'Manrope', sans-serif;
+}
+.tema-secundario .btn-vermelho,
+.tema-secundario .btn-danger {
+  --bs-btn-bg: #E5322D;
+  --bs-btn-border-color: #E5322D;
+  --bs-btn-hover-bg: #b8231f;
+  --bs-btn-hover-border-color: #b8231f;
+  --bs-btn-active-bg: #9c1c19;
+  --bs-btn-active-border-color: #9c1c19;
+  --bs-btn-focus-shadow-rgb: 229, 50, 45;
+  background-color: #E5322D !important;
+  border-color: #E5322D !important;
+}
+.tema-secundario .texto-vermelho {
+  color: #E5322D !important;
+}
+
+/*Hover para botão vermelho*/
+.tema-secundario .btn-vermelho:hover,
+.tema-secundario .btn-danger:hover{
+  background-color: #b8231f !important;
+  border-color: #b8231f !important;
+  color: #FFFFFF !important;
+}
+
+/*Personalizando a navbar*/
+.navbar {
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid #EAEAEA; /*Linha cinza para separar do fundo*/
+  font-family: 'Inter', sans-serif !important;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link{
+  color: #111111 !important;
+  font-weight: 500;
+}
+
+/*Ao passar o mouse me algum link, ele fica vermelho*/
+.navbar .nav-link:hover{
+  color: #DD0F0E !important;
+}
+
+/*PARA AS TELAS DE CADASTRO*/
+/*Espaçamento entre os campos de formulário e os botões 'salvar' e 'cancelar'*/
+.form-group{
+  margin-bottom: 1.25rem !important;
+}
+
+/*Espaçamento entre texto e a caixinha*/
+.form-group label{
+  margin-bottom: 0.4rem !important;
+  font-weight: 500;
+}
+
+/*Hover para os links do rodape*/
+.footer-link:hover{
+  color: #DD0F0E !important;
+  transition: color 0.2s ease;
+}
+
+/*Fundo geral*/
+body{
+  background-color: #f8f9fa;
+  color: #1f2937;
+}
+
+.card{
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  padding: 12px 16px;
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+.card-header {
+  background-color: transparent !important;
+  border-bottom: none !important;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  padding-bottom: 4px;
+}
+
+/*DEIXAR AS TELAS DE CADASTRO MAIS PROXIMAS DO FIGMA*/
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  color: #111827;
+  font-size: 0.92rem;
+  padding: 8px 14px;
+  box-shadow: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.form-control:disabled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/*TELAS DE LISTAGEM MAIS PROXIMAS DO FIGMA*/
+.table {
+  margin-top: 16px;
+}
+
+.table thead th {
+  border-top: none;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  padding: 12px 10px;
+}
+
+.table tbody td {
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+  padding: 14px 10px;
+  font-size: 0.92rem;
+  color: #1f2937;
+}
+
+/*Formato arredondado e espaçamento*/
+.tema-principal .btn,
+.tema-secundario .btn{
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 10px 24px;
+}
+
+/*Botao Salvar vermelho*/
+.tema-principal .btn-success{
+  background-color: #DD0F0E !important;
+  border-color: #DD0F0E !important;
+  color: #FFFFFF !important;
+}
+
+.tema-principal .btn-success:hover {
+  background-color: #a80b0a !important;
+  border-color: #a80b0a !important;
+}
+
+.tema-secundario .btn-success {
+  background-color: #E5322D !important;
+  border-color: #E5322D !important;
+  color: #FFFFFF !important;
+}
+
+.tema-secundario .btn-success:hover {
+  background-color: #b8231f !important;
+  border-color: #b8231f !important;
+}
+
+/*Botao Cancelar cinza*/
+.tema-principal .btn-danger,
+.tema-secundario .btn-danger {
+  border-radius: 10px;
+}
+
+orm .btn-danger,
+.bs-component .MuiStack-root .btn-danger {
+  background-color: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+}
+
+form .btn-danger:hover,
+.bs-component .MuiStack-root .btn-danger:hover {
+  background-color: #e5e7eb !important;
+  color: #111827 !important;
 }
