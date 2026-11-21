@@ -20,9 +20,9 @@ function CadastroConvocacoes() {
 
     const baseURL = `${BASE_URL}/convocacoes`;
 
-    const [tipoS, setTipoS] = useState('');
+    const [idTipoS, setIdTipoS] = useState('');
     const [urgencia, setUrgencia] = useState('');
-    const [status, setStatus] = useState('ativa');
+    const [status, setStatus] = useState('Ativa');
     const [idHemocentro, setIdHemocentro] = useState('');
 
     const [tipos, setTipos] = useState([]);
@@ -31,14 +31,20 @@ function CadastroConvocacoes() {
     const [dados, setDados] = useState(null);
 
     function preencher(convocacao) {
-        setTipoS(convocacao.tipoS ?? '');
+        setIdTipoS(convocacao.idTipoS != null ? String(convocacao.idTipoS) : '');
         setUrgencia(convocacao.urgencia ?? '');
-        setStatus(convocacao.status ?? 'ativa');
-        setIdHemocentro(convocacao.idHemocentro ?? '');
+        setStatus(convocacao.status ?? 'Ativa');
+        setIdHemocentro(convocacao.idHemocentro != null ? String(convocacao.idHemocentro) : '');
     }
 
     function inicializar() {
-        const estaVazio = !tipoS && !urgencia && !idHemocentro; // Verifica se os campos estão vazios
+        // Volta para a página anterior na edição
+        if (idParam != null){
+            navigate(-1);
+            return;
+        }
+        
+        const estaVazio = !idTipoS && !urgencia && !idHemocentro; // Verifica se os campos estão vazios
 
         if(estaVazio){ // Se esta vazio volta para a pagina anterior
             navigate(-1);
@@ -53,12 +59,17 @@ function CadastroConvocacoes() {
     }
 
     async function salvar() {
-        if (!tipoS || !urgencia || !status || !idHemocentro) {
+        if (!idTipoS || !urgencia || !status || !idHemocentro) {
             mensagemAlert('Preencha todos os campos obrigatórios.');
             return;
         }
 
-        const data = { tipoS, urgencia, status, idHemocentro };
+        const data = { 
+            idTipoS: Number(idTipoS), 
+            urgencia, 
+            status, 
+            idHemocentro: Number(idHemocentro) 
+        };
 
         if (idParam == null) {
             await axios
@@ -121,22 +132,40 @@ function CadastroConvocacoes() {
     }, [idParam]);
 
     return (
-        <div className='container'>
+        <div className='container tema-principal'>
             <Card title='Cadastro de Convocação'>
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
+                            <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
+                                <select
+                                    id='inputHemocentro'
+                                    value={String(idHemocentro)}
+                                    className='form-control'
+                                    name='idHemocentro'
+                                    onChange={(e) =>
+                                        setIdHemocentro(e.target.value)
+                                    }
+                                >
+                                    <option value=''>Selecione</option>
+                                    {hemocentros.map((hemocentro) => (
+                                        <option key={hemocentro.id} value={String(hemocentro.id)}>
+                                            {hemocentro.razaoSocial}
+                                        </option>
+                                    ))}
+                                </select>
+                            </FormGroup>
                             <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
                                 <select
                                     id='inputTipoS'
-                                    value={tipoS}
+                                    value={String(idTipoS)}
                                     className='form-control'
-                                    name='tipoS'
-                                    onChange={(e) => setTipoS(e.target.value)}
+                                    name='idTipoS'
+                                    onChange={(e) => setIdTipoS(e.target.value)}
                                 >
                                     <option value=''>Selecione</option>
                                     {tipos.map((tipo) => (
-                                        <option key={tipo.id} value={tipo.tipo}>
+                                        <option key={tipo.id} value={String(tipo.id)}>
                                             {tipo.tipo}
                                         </option>
                                     ))}
@@ -151,9 +180,9 @@ function CadastroConvocacoes() {
                                     onChange={(e) => setUrgencia(e.target.value)}
                                 >
                                     <option value=''>Selecione</option>
-                                    <option value='critico'>Crítico</option>
-                                    <option value='alerta'>Alerta</option>
-                                    <option value='estavel'>Estável</option>
+                                    <option value='Alta'>Alta</option>
+                                    <option value='Média'>Média</option>
+                                    <option value='Baixa'>Baixa</option>
                                 </select>
                             </FormGroup>
                             <FormGroup label='Status: *' htmlFor='inputStatus'>
@@ -164,28 +193,8 @@ function CadastroConvocacoes() {
                                     name='status'
                                     onChange={(e) => setStatus(e.target.value)}
                                 >
-                                    <option value='ativa'>Ativa</option>
-                                    <option value='finalizada'>Finalizada</option>
-                                </select>
-                            </FormGroup>
-                            <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
-                                <select
-                                    id='inputHemocentro'
-                                    value={idHemocentro}
-                                    className='form-control'
-                                    name='idHemocentro'
-                                    onChange={(e) =>
-                                        setIdHemocentro(
-                                            e.target.value === '' ? '' : Number(e.target.value)
-                                        )
-                                    }
-                                >
-                                    <option value=''>Selecione</option>
-                                    {hemocentros.map((hemocentro) => (
-                                        <option key={hemocentro.id} value={hemocentro.id}>
-                                            {hemocentro.nome}
-                                        </option>
-                                    ))}
+                                    <option value='Ativa'>Ativa</option>
+                                    <option value='Finalizada'>Finalizada</option>
                                 </select>
                             </FormGroup>
                             <Stack spacing={1} padding={1} direction='row'>
