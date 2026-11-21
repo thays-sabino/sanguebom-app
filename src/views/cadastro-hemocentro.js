@@ -20,24 +20,49 @@ function CadastroHemocentros() {
 
   const baseURL = `${BASE_URL}/hemocentros`;
 
-  const [nome, setNome] = useState('');
+  const [razaoSocial, setRazaoSoial] = useState('');
+  const [cnpj, setCnpj] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [senhaRepeticao, setSenhaRepeticao] = useState('');
+
+  // Campos de endereço direto no objeto hemocentro
+  const [logradouro, setLogradouro] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
+  const [cep, setCep] = useState('');
 
   const [dados, setDados] = useState(null);
 
   const senhasDiferentes = senhaRepeticao !== '' && senha !== senhaRepeticao;
 
   function preencher(hemocentro) {
-    setNome(hemocentro.nome ?? '');
+    setRazaoSoial(hemocentro.razaoSocial ?? '');
+    setCnpj(hemocentro.cnpj ?? '');
+    setTelefone(hemocentro.telefone ?? '');
     setEmail(hemocentro.email ?? '');
     setSenha(hemocentro.senha ?? '');
     setSenhaRepeticao(hemocentro.senhaRepeticao ?? '');
+
+    setCep(hemocentro.cep ?? '');
+    setLogradouro(hemocentro.logradouro ?? '');
+    setNumero(hemocentro.numero ?? '');
+    setBairro(hemocentro.bairro ?? '');
+    setCidade(hemocentro.cidade ?? '');
+    setUf(hemocentro.uf ?? '');
   }
 
   function inicializar() {
-    const estaVazio = !nome && !email && !senha &&!senhaRepeticao; // Verifica se os campos estão vazios
+    // Volta para a página anterior na edição
+        if (idParam != null){
+            navigate(-1);
+            return;
+        }
+    
+    const estaVazio = !razaoSocial && !cnpj && !telefone && !email && !senha && !senhaRepeticao && !cep && !logradouro && !numero && !bairro && !cidade && !uf;
 
         if(estaVazio){ // Se esta vazio volta para a pagina anterior
             navigate(-1);
@@ -52,7 +77,7 @@ function CadastroHemocentros() {
   }
 
   async function salvar() {
-    if (!nome || !email || (idParam == null && !senha)) {
+    if (!razaoSocial || !cnpj || !email || (idParam == null && !senha)) {
       mensagemAlert('Preencha todos os campos obrigatórios.');
       return;
     }
@@ -60,14 +85,14 @@ function CadastroHemocentros() {
     if (senha !== senhaRepeticao) return;
 
     if (idParam == null) {
-      const data = { nome, email, senha, senhaRepeticao };
+      const data = { razaoSocial, cnpj, logradouro, numero, bairro, cidade, uf, cep, telefone, email, senha, senhaRepeticao, };
 
       await axios
         .post(baseURL, JSON.stringify(data), {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function () {
-          mensagemSucesso(`Hemocentro ${nome} cadastrado com sucesso!`);
+          mensagemSucesso(`Hemocentro ${razaoSocial} cadastrado com sucesso!`);
           navigate(`/listagem-hemocentros`);
         })
         .catch(function (error) {
@@ -78,14 +103,14 @@ function CadastroHemocentros() {
           );
         });
     } else {
-      const data = { ...dados, nome, email, senha, senhaRepeticao };
+      const data = { ...dados, razaoSocial, cnpj, logradouro, numero, bairro, cidade, uf, cep, telefone, email, senha, senhaRepeticao, };
 
       await axios
         .put(`${baseURL}/${idParam}`, JSON.stringify(data), {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function () {
-          mensagemSucesso(`Hemocentro ${nome} atualizado com sucesso!`);
+          mensagemSucesso(`Hemocentro ${razaoSocial} atualizado com sucesso!`);
           navigate(`/listagem-hemocentros`);
         })
         .catch(function (error) {
@@ -104,19 +129,23 @@ function CadastroHemocentros() {
     const response = await axios.get(`${baseURL}/${idParam}`);
     const hemocentro = response.data;
 
+    let emailAtual = hemocentro.email ?? '';
     let senhaAtual = hemocentro.senha ?? '';
     let repeticaoAtual = hemocentro.senhaRepeticao ?? '';
 
-    if (!senhaAtual && hemocentro.idUsuario) {
+    if ((!emailAtual || !senhaAtual) && hemocentro.idUsuario) {
       const usuario = await axios.get(
         `${BASE_URL}/usuarios/${hemocentro.idUsuario}`
       );
-      senhaAtual = usuario.data.senha ?? '';
-      repeticaoAtual = usuario.data.senhaRepeticao ?? '';
+      emailAtual = emailAtual || (usuario.data.email ?? '');
+      senhaAtual = senhaAtual || (usuario.data.senha ?? '');
+      repeticaoAtual =
+        repeticaoAtual || (usuario.data.senhaRepeticao ?? senhaAtual);
     }
 
     const completo = {
       ...hemocentro,
+      email: emailAtual,
       senha: senhaAtual,
       senhaRepeticao: repeticaoAtual,
     };
@@ -131,59 +160,184 @@ function CadastroHemocentros() {
   }, [idParam]);
 
   return (
-    <div className='container'>
+    <div className='container tema-principal'>
       <Card title='Cadastro de Hemocentro'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <FormGroup label='Nome: *' htmlFor='inputNome'>
-                <input
-                  type='text'
-                  id='inputNome'
-                  value={nome}
-                  className='form-control'
-                  name='nome'
-                  onChange={(e) => setNome(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='E-mail: *' htmlFor='inputEmail'>
-                <input
-                  type='email'
-                  id='inputEmail'
-                  value={email}
-                  className='form-control'
-                  name='email'
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='Senha: *' htmlFor='inputSenha'>
-                <input
-                  type='password'
-                  id='inputSenha'
-                  value={senha}
-                  className='form-control'
-                  name='senha'
-                  onChange={(e) => setSenha(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup
-                label='Repita a Senha: *'
-                htmlFor='inputSenhaRepeticao'
-              >
-                <input
-                  type='password'
-                  id='inputSenhaRepeticao'
-                  value={senhaRepeticao}
-                  className='form-control'
-                  name='senhaRepeticao'
-                  onChange={(e) => setSenhaRepeticao(e.target.value)}
-                />
-                {senhasDiferentes && (
-                  <small className='text-danger'>
-                    As senhas não conferem.
-                  </small>
-                )}
-              </FormGroup>
+
+              <div className='row'>
+                <div className='col-md-6'>
+                  <FormGroup label='Razão Social: *' htmlFor='inputRazaoSocial'>
+                    <input
+                      type='text'
+                      id='inputRazaoSocial'
+                      value={razaoSocial}
+                      className='form-control'
+                      name='razaoSocial'
+                      onChange={(e) => setRazaoSoial(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+                <div className='col-md-6'>
+                  <FormGroup label='CNPJ: *' htmlFor='inputCnpj'>
+                    <input
+                      type='text'
+                      id='inputCnpj'
+                      value={cnpj}
+                      className='form-control'
+                      name='cnpj'
+                      onChange={(e) => setCnpj(e.target.value)}
+                    />
+                </FormGroup>
+                </div>
+              </div>
+
+              <div className='row'>
+                <div className='col-md-6'>
+                  <FormGroup label='E-mail: *' htmlFor='inputEmail'>
+                    <input
+                      type='email'
+                      id='inputEmail'
+                      value={email}
+                      className='form-control'
+                      name='email'
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+
+                <div className='col-md-6'>
+                  <FormGroup label='Telefone: *' htmlFor='inputTelefone'>
+                    <input
+                      type='text'
+                      id='inputTelefone'
+                      value={telefone}
+                      className='form-control'
+                      name='telefone'
+                      onChange={(e) => setTelefone(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>  
+              </div>
+
+               <hr className='my-4' />
+              <h5 className='secao-titulo'>Endereço</h5>
+
+              <div className='row'>
+                <div className='col-md-3'>
+                  <FormGroup label='CEP: *' htmlFor='inputCep'>
+                    <input
+                      type='text'
+                      id='inputCep'
+                      value={cep}
+                      className='form-control'
+                      name='cep'
+                      onChange={(e) => setCep(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+                <div className='col-md-7'>
+                  <FormGroup label='Logradouro: *' htmlFor='inputLogradouro'>
+                    <input
+                      type='text'
+                      id='inputLogradouro'
+                      value={logradouro}
+                      className='form-control'
+                      name='logradouro'
+                      onChange={(e) => setLogradouro(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+                <div className='col-md-2'>
+                  <FormGroup label='Número: *' htmlFor='inputNumero'>
+                    <input
+                      type='text'
+                      id='inputNumero'
+                      value={numero}
+                      className='form-control'
+                      name='numero'
+                      onChange={(e) => setNumero(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+              </div>
+
+              <div className='row'>
+                <div className='col-md-5'>
+                  <FormGroup label='Bairro: *' htmlFor='inputBairro'>
+                    <input
+                      type='text'
+                      id='inputBairro'
+                      value={bairro}
+                      className='form-control'
+                      name='bairro'
+                      onChange={(e) => setBairro(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+                <div className='col-md-5'>
+                  <FormGroup label='Cidade: *' htmlFor='inputCidade'>
+                    <input
+                      type='text'
+                      id='inputCidade'
+                      value={cidade}
+                      className='form-control'
+                      name='cidade'
+                      onChange={(e) => setCidade(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+                <div className='col-md-2'>
+                  <FormGroup label='UF: *' htmlFor='inputUf'>
+                    <input
+                      type='text'
+                      id='inputUf'
+                      value={uf}
+                      maxLength={2}
+                      className='form-control'
+                      name='uf'
+                      onChange={(e) => setUf(e.target.value.toUpperCase())}
+                    />
+                  </FormGroup>
+                </div> 
+              </div>
+
+              <hr className='my-4' />
+              <div className='row'>
+                <div className='col-md-6'>
+                  <FormGroup label='Senha: *' htmlFor='inputSenha'>
+                    <input
+                      type='password'
+                      id='inputSenha'
+                      value={senha}
+                      className='form-control'
+                      name='senha'
+                      onChange={(e) => setSenha(e.target.value)}
+                    />
+                  </FormGroup>
+                </div>
+                <div className='col-md-6'>
+                  <FormGroup
+                    label='Repita a Senha: *'
+                    htmlFor='inputSenhaRepeticao'
+                  >
+                    <input
+                      type='password'
+                      id='inputSenhaRepeticao'
+                      value={senhaRepeticao}
+                      className='form-control'
+                      name='senhaRepeticao'
+                      onChange={(e) => setSenhaRepeticao(e.target.value)}
+                    />
+                    {senhasDiferentes && (
+                      <small className='text-danger'>
+                        As senhas não conferem.
+                      </small>
+                    )}
+                  </FormGroup>
+                </div>
+              </div>    
               <Stack spacing={1} padding={1} direction='row'>
                 <button
                   onClick={salvar}
