@@ -40,6 +40,12 @@ function CadastroUsuarios() {
     }
 
     function inicializar() {
+        // Volta para a página anterior na edição
+        if (idParam != null){
+            navigate(-1);
+            return;
+        }
+        
         const estaVazio = !email && !senha &&!senhaRepeticao && !perfil; // Verifica se os campos estão vazios
 
         if(estaVazio){ // Se esta vazio volta para a pagina anterior
@@ -113,11 +119,38 @@ function CadastroUsuarios() {
     }, [idParam]);
 
     return (
-        <div className='container'>
+        <div className='container tema-principal'>
             <Card title='Cadastro de Usuário'>
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
+                            <FormGroup label='Status: *' htmlFor='inputStatus'>
+                                <select
+                                    id='inputStatus'
+                                    value={status ? 'true' : 'false'}
+                                    className='form-control'
+                                    name='status'
+                                    onChange={(e) => setStatus(e.target.value === 'true')}
+                                >
+                                    <option value='true'>Ativo</option>
+                                    <option value='false'>Inativo</option>
+                                </select>
+                            </FormGroup>
+                            <FormGroup label='Perfil: *' htmlFor='inputPerfil'>
+                                <select
+                                    id='inputPerfil'
+                                    value={perfil}
+                                    className='form-control'
+                                    name='perfil'
+                                    onChange={(e) => setPerfil(e.target.value)}
+                                >
+                                    <option value=''>Selecione</option>
+                                    <option value='adm'>Administrador</option>
+                                    <option value='doador'>Doador</option>
+                                    <option value='hemocentro'>Hemocentro</option>
+                                    <option value='instituicao'>Instituição</option>
+                                </select>
+                            </FormGroup>
                             <FormGroup label='E-mail: *' htmlFor='inputEmail'>
                                 <input
                                     type='email'
@@ -155,33 +188,6 @@ function CadastroUsuarios() {
                                         As senhas não conferem.
                                     </small>
                                 )}
-                            </FormGroup>
-                            <FormGroup label='Perfil: *' htmlFor='inputPerfil'>
-                                <select
-                                    id='inputPerfil'
-                                    value={perfil}
-                                    className='form-control'
-                                    name='perfil'
-                                    onChange={(e) => setPerfil(e.target.value)}
-                                >
-                                    <option value=''>Selecione</option>
-                                    <option value='adm'>Administrador</option>
-                                    <option value='doador'>Doador</option>
-                                    <option value='hemocentro'>Hemocentro</option>
-                                    <option value='instituicao'>Instituição</option>
-                                </select>
-                            </FormGroup>
-                            <FormGroup label='Status: *' htmlFor='inputStatus'>
-                                <select
-                                    id='inputStatus'
-                                    value={status ? 'true' : 'false'}
-                                    className='form-control'
-                                    name='status'
-                                    onChange={(e) => setStatus(e.target.value === 'true')}
-                                >
-                                    <option value='true'>Ativo</option>
-                                    <option value='false'>Inativo</option>
-                                </select>
                             </FormGroup>
                             <Stack spacing={1} padding={1} direction='row'>
                                 <button
