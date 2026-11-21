@@ -46,7 +46,7 @@ function ListagemUsuarios() {
   }, []);
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Usuários'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -58,43 +58,43 @@ function ListagemUsuarios() {
               >
                 Novo Cadastro
               </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>E-mail</th>
-                    <th scope='col'>Senha</th>
-                    <th scope='col'>Perfil</th>
-                    <th scope='col'>Status</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {usuarios.map((usuario) => (
-                    <tr key={usuario.id}>
-                      <td>{usuario.email}</td>
-                      <td>{usuario.senha}</td>
-                      <td>{usuario.perfil}</td>
-                      <td>{usuario.status ? 'Ativo' : 'Inativo'}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(usuario.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(usuario.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>E-mail</th>
+                      <th scope='col'>Perfil</th>
+                      <th scope='col'>Status</th>
+                      <th scope='col'>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>  
+                  </thead>
+                  <tbody>
+                    {usuarios.map((usuario) => (
+                      <tr key={usuario.id}>
+                        <td>{usuario.email}</td>
+                        <td>{usuario.perfil}</td>
+                        <td>{usuario.status ? 'Ativo' : 'Inativo'}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(usuario.id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(usuario.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>  
             </div>
           </div>
         </div>
