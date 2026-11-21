@@ -8,7 +8,7 @@ import Rotas from './rotas.js';
 class App extends React.Component {
   render() {
     return (
-      <div className='container'>
+      <div>
         <Rotas />
         <Navbar />
       </div>
@@ -17,3 +17,5 @@ class App extends React.Component {
 }
 
 export default App;
+
+/** REMOVI 'CONTAINER' DA DIV PARA QUE A FAIX CINZA NA HOME PREENCHESSE A TELA TODA */
