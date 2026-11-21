@@ -55,7 +55,7 @@ function ListagemHemocentros() {
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Hemocentros'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -67,51 +67,53 @@ function ListagemHemocentros() {
               >
                 Novo Cadastro
               </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>Razão Social</th>
-                    <th scope='col'>CNPJ</th>
-                    <th scope='col'>E-mail</th>
-                    <th scope='col'>Endereço</th>
-                    <th scope='col'>Telefone</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {hemocentros.map((hemocentro) => {
-                    const usuarioEncontrado = usuarios.find(
-                      (u) => u.id === hemocentro.idUsuario
-                    );
-                   
-                  return (
-                    <tr key={hemocentro.id}>
-                      <td>{hemocentro.razaoSocial}</td>
-                      <td>{hemocentro.cnpj}</td>
-                      <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
-                      <td>{hemocentro.logradouro}, n° {hemocentro.numero} - {hemocentro.bairro}, {hemocentro.cidade} - {hemocentro.uf}, CEP: {hemocentro.cep}</td>
-                      <td>{hemocentro.telefone}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(hemocentro.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(hemocentro.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>Razão Social</th>
+                      <th scope='col'>CNPJ</th>
+                      <th scope='col'>E-mail</th>
+                      <th scope='col'>Endereço</th>
+                      <th scope='col'>Telefone</th>
+                      <th scope='col'>Ações</th>
                     </tr>
-                  );
-                  })} 
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {hemocentros.map((hemocentro) => {
+                      const usuarioEncontrado = usuarios.find(
+                        (u) => u.id === hemocentro.idUsuario
+                      );
+                    
+                    return (
+                      <tr key={hemocentro.id}>
+                        <td>{hemocentro.razaoSocial}</td>
+                        <td>{hemocentro.cnpj}</td>
+                        <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
+                        <td>{hemocentro.logradouro}, n° {hemocentro.numero} - {hemocentro.bairro}, {hemocentro.cidade} - {hemocentro.uf}, CEP: {hemocentro.cep}</td>
+                        <td>{hemocentro.telefone}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(hemocentro.id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(hemocentro.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    );
+                    })} 
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
