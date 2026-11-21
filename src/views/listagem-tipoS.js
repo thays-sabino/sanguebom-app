@@ -47,51 +47,27 @@ function ListagemTipoS() {
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Tipos Sanguíneos'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <button
-                type='button'
-                className='btn btn-danger'
-                onClick={cadastrar}
-              >
-                Novo Cadastro
-              </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>ID</th>
-                    <th scope='col'>Tipo</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tipoS.map((tipo) => (
-                    <tr key={tipo.id}>
-                      <td>{tipo.id}</td>
-                      <td>{tipo.tipo}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(tipo.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(tipo.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>Tipo</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {tipoS.map((tipo) => (
+                      <tr key={tipo.id}>
+                        <td>{tipo.tipo}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
