@@ -16,6 +16,7 @@ import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
 const baseURL = `${BASE_URL}/instituicoes`;
+const usuariosURL = `${BASE_URL}/usuarios`;
 
 function ListagemInstituicoes() {
   const navigate = useNavigate();
@@ -29,10 +30,15 @@ function ListagemInstituicoes() {
   };
 
   const [instituicoes, setInstituicoes] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
 
   useEffect(() => {
     axios.get(baseURL).then((response) => {
       setInstituicoes(response.data);
+    });
+
+    axios.get(usuariosURL).then((response) => {
+      setUsuarios(response.data);
     });
   }, []);
 
@@ -51,7 +57,7 @@ function ListagemInstituicoes() {
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Instituições'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -78,11 +84,16 @@ function ListagemInstituicoes() {
                     </tr>
                   </thead>
                   <tbody>
-                    {instituicoes.map((instituicao) => (
+                    {instituicoes.map((instituicao) => {
+                      const usuarioEncontrado = usuarios.find(
+                        (u) => u.id === instituicao.idUsuario
+                      );
+
+                    return(
                       <tr key={instituicao.id}>
                         <td>{instituicao.razaoSocial}</td>
                         <td>{instituicao.cnpj}</td>
-                        <td>{instituicao.email}</td>
+                        <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
                         <td>{instituicao.responsavelTec}</td>
                         <td>{instituicao.cpfRT}</td>
                         <td>{instituicao.logradouro}, n° {instituicao.numero} - {instituicao.bairro}, {instituicao.cidade} - {instituicao.uf}, CEP: {instituicao.cep}</td>
@@ -104,7 +115,8 @@ function ListagemInstituicoes() {
                           </Stack>
                         </td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </table>
               </div>
