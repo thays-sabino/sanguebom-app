@@ -30,6 +30,7 @@ function ListagemConvocacoes() {
 
   const [convocacoes, setConvocacoes] = useState([]);
   const [hemocentros, setHemocentros] = useState([]);
+  const [tipoS, setTipoS] = useState([]);
 
   useEffect(() => {
     axios.get(baseURL).then((response) => {
@@ -39,11 +40,20 @@ function ListagemConvocacoes() {
     axios.get(`${BASE_URL}/hemocentros`).then((response) => {
       setHemocentros(response.data);
     });
+
+    axios.get(`${BASE_URL}/tipoS`).then((response) => {
+      setTipoS(response.data);
+    });
   }, []);
 
   function nomeHemocentro(idHemocentro) {
-    const hemocentro = hemocentros.find((h) => h.id === idHemocentro);
-    return hemocentro ? hemocentro.nome : '';
+    const hemocentro = hemocentros.find((h) => String(h.id) === String(idHemocentro));
+    return hemocentro ? hemocentro.razaoSocial : '';
+  }
+
+   function nomeTipoS(idTipoS) {
+    const encontrado = tipoS.find((t) => String(t.id) === String(idTipoS));
+    return encontrado ? encontrado.tipo : '';
   }
 
   async function excluir(id) {
@@ -61,7 +71,7 @@ function ListagemConvocacoes() {
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Convocações'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -73,47 +83,49 @@ function ListagemConvocacoes() {
               >
                 Novo Cadastro
               </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>ID</th>
-                    <th scope='col'>Hemocentro</th>
-                    <th scope='col'>Urgência</th>
-                     <th scope='col'>Tipo Sanguíneo</th>
-                    <th scope='col'>Status</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {convocacoes.map((convocacao) => (
-                    <tr key={convocacao.id}>
-                      <td>{convocacao.id}</td>
-                      <td>{nomeHemocentro(convocacao.idHemocentro)}</td>
-                      <td>{convocacao.urgencia}</td>
-
-                      <td>{convocacao.tipoS}</td>
-                      
-                      <td>{convocacao.status}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(convocacao.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(convocacao.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>ID</th>
+                      <th scope='col'>Hemocentro</th>
+                      <th scope='col'>Urgência</th>
+                      <th scope='col'>Tipo Sanguíneo</th>
+                      <th scope='col'>Status</th>
+                      <th scope='col'>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {convocacoes.map((convocacao) => (
+                      <tr key={convocacao.id}>
+                        <td>{convocacao.id}</td>
+                        <td>{nomeHemocentro(convocacao.idHemocentro)}</td>
+                        <td>{convocacao.urgencia}</td>
+
+                        <td>{nomeTipoS(convocacao.idTipoS)}</td>
+                        
+                        <td>{convocacao.status}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(convocacao.id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(convocacao.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
