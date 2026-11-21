@@ -26,6 +26,12 @@ function CadastroTipoS() {
   const [dados, setDados] = useState(null);
 
   function inicializar() {
+    // Volta para a página anterior na edição
+        if (idParam != null){
+            navigate(-1);
+            return;
+        }
+    
     const estaVazio = !tipo; // Verifica se os campos estão vazios
 
         if(estaVazio){ // Se esta vazio volta para a pagina anterior
@@ -99,7 +105,7 @@ function CadastroTipoS() {
   }, [idParam]);
 
   return (
-    <div className='container'>
+    <div className='container tema-principal'>
       <Card title='Cadastro de Tipo Sanguíneo'>
         <div className='row'>
           <div className='col-lg-12'>
