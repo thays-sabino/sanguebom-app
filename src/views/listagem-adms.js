@@ -16,6 +16,7 @@ import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
 const baseURL = `${BASE_URL}/adms`;
+const usuariosURL = `${BASE_URL}/usuarios`;
 
 function ListagemAdms() {
   const navigate = useNavigate();
@@ -29,10 +30,15 @@ function ListagemAdms() {
   };
 
   const [adms, setAdms] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
 
   useEffect(() => {
     axios.get(baseURL).then((response) => {
       setAdms(response.data);
+    });
+
+    axios.get(usuariosURL).then((response) => {
+      setUsuarios(response.data);
     });
   }, []);
 
@@ -49,7 +55,7 @@ function ListagemAdms() {
   }
 
   return (
-    <div className='container'>
+    <div className='container tema-secundario'>
       <Card title='Listagem de Administradores'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -61,44 +67,52 @@ function ListagemAdms() {
               >
                 Novo Cadastro
               </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>Login</th>
-                    <th scope='col'>E-mail</th>
-                    <th scope='col'>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adms.map((adm) => (
-                    <tr key={adm.id}>
-                      <td>{adm.login}</td>
-                      <td>{adm.email}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(adm.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(adm.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
-                    </tr>
-                  ))}
+              <div className='table-responsive'>
+                <table className='table table-hover'>
+                  <thead>
+                   <tr>
+                      <th scope='col'>Login</th>
+                      <th scope='col'>E-mail</th>
+                     <th scope='col'>Ações</th>
+                   </tr>
+                 </thead>
+                  <tbody>
+                    {adms.map((adm) => {
+                      const usuarioEncontrado = usuarios.find(
+                        (u) => String(u.id) === String(adm.idUsuario)
+                      );
+                    
+                    return(
+                     <tr key={adm.id}>
+                        <td>{adm.login}</td>
+                        <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
+                       <td>
+                         <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                             aria-label='edit'
+                             onClick={() => editar(adm.id)}
+                           >
+                             <EditIcon />
+                           </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(adm.id)}
+                           >
+                             <DeleteIcon />
+                           </IconButton>
+                         </Stack>
+                       </td>
+                     </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </Card>
+  </div>
   );
 }
 
