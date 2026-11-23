@@ -5,6 +5,8 @@ import Stack from '@mui/material/Stack';
 
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -12,6 +14,19 @@ import { mensagemSucesso, mensagemErro, mensagemAlert } from '../components/toas
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { exibirCpf, somenteNumeros } from '../services/mascaras';
+
+// Tira acentos e maiúsculas para a busca por nome
+function normalizar(texto) {
+  return String(texto ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+// Quantos resultados da busca aparecem de uma vez
+const MAX_RESULTADOS = 8;
 
 function CadastroDoacoes() {
   const { idParam } = useParams();
@@ -22,14 +37,17 @@ function CadastroDoacoes() {
 
   const [dtDoacao, setDtDoacao] = useState('');
   const [qtdDoada, setQtdDoada] = useState('');
-  const [idHemocentro, setIdHemocentro] = useState('');
   const [idDoador, setIdDoador] = useState('');
+  const [busca, setBusca] = useState(''); // texto digitado na pesquisa de doador
 
   const [tipos, setTipos] = useState([]);
   const [hemocentros, setHemocentros] = useState([]);
   const [doadores, setDoadores] = useState([]);
 
   const [dados, setDados] = useState(null);
+
+  // Único hemocentro do sistema (Juiz de Fora)
+  const hemocentro = hemocentros[0] ?? null;
 
   // Converte "01/01/2026" (db.json) -> "2026-01-01" (input type="date")
   function paraISO(dataBR) {
@@ -51,43 +69,70 @@ function CadastroDoacoes() {
 
   // descobre o tipo sanguineo do doador
   const doadorSelecionado = doadores.find((d) => String(d.id) === String(idDoador));
-  const tipoDoador = doadorSelecionado ? tipos.find((t) => String(t.id) === String(doadorSelecionado.idTipoS)): null;
+  const tipoDoador = doadorSelecionado
+    ? tipos.find((t) => String(t.id) === String(doadorSelecionado.idTipoS))
+    : null;
 
-  function preencher(doacao) {
-    setDtDoacao(doacao.dtDoacao ?? '');
-    setQtdDoada(doacao.qtdDoada ?? '');
-    setIdHemocentro(doacao.idHemocentro != null ? String(doacao.idHemocentro) : '');
-    setIdDoador(doacao.idDoador != null ? String(doacao.idDoador) : '');
+  // Pesquisa por nome ou CPF (o CPF pode ser digitado com ou sem pontos e traço)
+  const termo = normalizar(busca);
+  const digitos = somenteNumeros(busca);
+  const encontrados =
+    termo === ''
+      ? []
+      : doadores.filter(
+        (d) =>
+          normalizar(d.nome).includes(termo) ||
+          (digitos !== '' && somenteNumeros(d.cpf).includes(digitos))
+      );
+
+  function selecionarDoador(doador) {
+    setIdDoador(String(doador.id));
+    setBusca('');
   }
 
-  function inicializar() {
-    // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-    
-    const estaVazio = !dtDoacao && !qtdDoada && !idHemocentro &&!idDoador; // Verifica se os campos estão vazios
+  function limparDoador() {
+    setIdDoador('');
+    setBusca('');
+  }
 
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-    
+  function preencher(doacao) {
+    setDtDoacao(paraISO(doacao.dtDoacao));
+    setQtdDoada(doacao.qtdDoada ?? '');
+    setIdDoador(doacao.idDoador != null ? String(doacao.idDoador) : '');
+    setBusca('');
+  }
+
+  // Cancelar: descarta o que foi digitado e mantém o que era original
+  function inicializar() {
     if (idParam == null) {
-      preencher({});
+      preencher({}); // cadastro novo: limpa tudo
     } else if (dados) {
-      preencher(dados);
+      preencher(dados); // edição: volta aos valores originais
     }
   }
 
   async function salvar() {
-    if (!dtDoacao || !qtdDoada || !idHemocentro || !idDoador) {
+    if (!idDoador) {
+      mensagemAlert('Pesquise e selecione o doador na lista.');
+      return;
+    }
+
+    if (!dtDoacao || !qtdDoada || !idDoador) {
       mensagemAlert('Preencha todos os campos obrigatórios.');
       return;
     }
 
-    const data = { dtDoacao: paraBR(dtDoacao), qtdDoada, idHemocentro: Number(idHemocentro), idDoador: Number(idDoador), };
+    if (!hemocentro) {
+      mensagemErro('Hemocentro não encontrado. Tente novamente.');
+      return;
+    }
+
+    const data = {
+      dtDoacao: paraBR(dtDoacao),
+      qtdDoada: Number(qtdDoada),
+      idHemocentro: hemocentro.id,
+      idDoador: Number(idDoador),
+    };
 
     if (idParam == null) {
       await axios
@@ -154,44 +199,85 @@ function CadastroDoacoes() {
 
   return (
     <div className='container tema-principal'>
+      {/* Botão de voltar para a listagem de doações */}
+      <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-doacoes')}>
+        <ArrowBackIcon />
+      </IconButton>
       <Card title='Cadastro de Doação'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
-                <select
+              <FormGroup label='Hemocentro:' htmlFor='inputHemocentro'>
+                <input
+                  type='text'
                   id='inputHemocentro'
-                  value={String(idHemocentro)}
+                  value={hemocentro ? hemocentro.razaoSocial : ''}
                   className='form-control'
-                  name='idHemocentro'
-                  onChange={(e) =>
-                    setIdHemocentro(e.target.value)}
-                >
-                  <option value=''>Selecione</option>
-                  {hemocentros.map((hemocentro) => (
-                    <option key={hemocentro.id} value={hemocentro.id}>
-                      {hemocentro.razaoSocial}
-                    </option>
-                  ))}
-                </select>
+                  disabled
+                />
               </FormGroup>
-              <FormGroup label='Doador: *' htmlFor='inputDoador'>
-                <select
-                  id='inputDoador'
-                  value={String(idDoador)}
-                  className='form-control'
-                  name='idDoador'
-                  onChange={(e) => setIdDoador(e.target.value)}
-                >
-                  <option value=''>Selecione</option>
-                  {doadores.map((doador) => (
-                    <option key={doador.id} value={String(doador.id)}>
-                      {doador.nome}
-                    </option>
-                  ))}
-                </select>
+              <FormGroup label='Doador (nome ou CPF): *' htmlFor='inputDoador'>
+                <div className='input-group'>
+                  <input
+                    type='text'
+                    id='inputDoador'
+                    value={doadorSelecionado ? doadorSelecionado.nome : busca}
+                    placeholder='Digite o nome ou o CPF do doador'
+                    autoComplete='off'
+                    className='form-control'
+                    name='busca'
+                    onChange={(e) => {
+                      setIdDoador('');
+                      setBusca(e.target.value);
+                    }}
+                  />
+                  {(idDoador || busca) && (
+                    <button
+                      type='button'
+                      className='btn btn-outline-secondary'
+                      onClick={limparDoador}
+                    >
+                      Limpar
+                    </button>
+                  )}
+                </div>
+
+                {doadorSelecionado && (
+                  <small className='text-muted'>
+                    CPF: {exibirCpf(doadorSelecionado.cpf)}
+                  </small>
+                )}
+
+                {!doadorSelecionado && termo !== '' && (
+                  <div
+                    className='list-group mt-1'
+                    style={{ maxHeight: '260px', overflowY: 'auto' }}
+                  >
+                    {encontrados.length === 0 ? (
+                      <div className='list-group-item text-muted'>
+                        Nenhum doador encontrado.
+                      </div>
+                    ) : (
+                      encontrados.slice(0, MAX_RESULTADOS).map((doador) => (
+                        <button
+                          key={doador.id}
+                          type='button'
+                          className='list-group-item list-group-item-action'
+                          onClick={() => selecionarDoador(doador)}
+                        >
+                          {doador.nome} — CPF {exibirCpf(doador.cpf)}
+                        </button>
+                      ))
+                    )}
+                    {encontrados.length > MAX_RESULTADOS && (
+                      <div className='list-group-item text-muted'>
+                        Mostrando {MAX_RESULTADOS} de {encontrados.length}. Refine a pesquisa.
+                      </div>
+                    )}
+                  </div>
+                )}
               </FormGroup>
-              <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
+              <FormGroup label='Tipo Sanguíneo:' htmlFor='inputTipoS'>
                 <input
                   type='text'
                   id='inputTipoS'
@@ -201,7 +287,7 @@ function CadastroDoacoes() {
                   disabled
                 />
               </FormGroup>
-              <FormGroup label='Data da Doação: *' htmlFor='inptDtDoacao'>
+              <FormGroup label='Data da Doação: *' htmlFor='inputDtDoacao'>
                 <input
                   type='date'
                   id='inputDtDoacao'

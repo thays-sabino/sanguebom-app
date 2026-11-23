@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
-
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -23,7 +24,7 @@ function CadastroSolicitacoes() {
   const [idTipoS, setIdTipoS] = useState('');
   const [qtdSolicitada, setQtdSolicitada] = useState('');
   const [urgencia, setUrgencia] = useState('');
-  const [status, setStatus] = useState('Ativa');
+  const [status, setStatus] = useState('Pendente');
   const [idHemocentro, setIdHemocentro] = useState('');
   const [idInstituicao, setIdInstituicao] = useState('');
 
@@ -37,29 +38,16 @@ function CadastroSolicitacoes() {
     setIdTipoS(solicitacao.idTipoS != null ? String(solicitacao.idTipoS) : '');
     setQtdSolicitada(solicitacao.qtdSolicitada ?? '');
     setUrgencia(solicitacao.urgencia ?? '');
-    setStatus(solicitacao.status ?? 'Ativa');
+    setStatus(solicitacao.status ?? 'Pendente');
     setIdHemocentro(solicitacao.idHemocentro != null ? String(solicitacao.idHemocentro) : '');
     setIdInstituicao(solicitacao.idInstituicao != null ? String(solicitacao.idInstituicao) : '');
   }
 
   function inicializar() {
-    // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-    
-    const estaVazio = !idTipoS && !qtdSolicitada && !urgencia && !idHemocentro && !idInstituicao; // Verifica se os campos estão vazios
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-    
     if (idParam == null) {
-      preencher({});
+      preencher({});      // cadastro novo: limpa tudo
     } else if (dados) {
-      preencher(dados);
+      preencher(dados);   // edição: volta aos valores originais
     }
   }
 
@@ -149,6 +137,10 @@ function CadastroSolicitacoes() {
 
   return (
     <div className='container tema-principal'>
+      {/* Botão de voltar para a listagem de solicitações */}
+      <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-solicitacoes')}>
+        <ArrowBackIcon />
+      </IconButton>
       <Card title='Cadastro de Solicitação'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -232,18 +224,17 @@ function CadastroSolicitacoes() {
                   name='qtdSolicitada'
                   onChange={(e) => setQtdSolicitada(e.target.value)}
                 />
-              </FormGroup>              
-              <FormGroup label='Status: *' htmlFor='inputStatus'>
-                <select
+              </FormGroup>
+              {/* O status não é escolhido aqui: nasce Pendente e muda quando o hemocentro responde */}
+              <FormGroup label='Status:' htmlFor='inputStatus'>
+                <input
+                  type='text'
                   id='inputStatus'
                   value={status}
                   className='form-control'
                   name='status'
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <option value='Ativa'>Ativa</option>
-                  <option value='Finalizada'>Finalizada</option>
-                </select>
+                  disabled
+                />
               </FormGroup>
               <Stack spacing={1} padding={1} direction='row'>
                 <button

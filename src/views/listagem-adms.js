@@ -70,49 +70,49 @@ function ListagemAdms() {
               <div className='table-responsive'>
                 <table className='table table-hover'>
                   <thead>
-                   <tr>
+                    <tr>
                       <th scope='col'>Login</th>
                       <th scope='col'>E-mail</th>
-                     <th scope='col'>Ações</th>
-                   </tr>
-                 </thead>
+                      <th scope='col'>Ações</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {adms.map((adm) => {
                       const usuarioEncontrado = usuarios.find(
                         (u) => String(u.id) === String(adm.idUsuario)
                       );
-                    
-                    return(
-                     <tr key={adm.id}>
-                        <td>{adm.login}</td>
-                        <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
-                       <td>
-                         <Stack spacing={1} padding={0} direction='row'>
-                            <IconButton
-                             aria-label='edit'
-                             onClick={() => editar(adm.id)}
-                           >
-                             <EditIcon />
-                           </IconButton>
-                            <IconButton
-                              aria-label='delete'
-                              onClick={() => excluir(adm.id)}
-                           >
-                             <DeleteIcon />
-                           </IconButton>
-                         </Stack>
-                       </td>
-                     </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+
+                      return (
+                        <tr key={adm.id}>
+                          <td>{adm.login}</td>
+                          <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
+                          <td>
+                            <Stack spacing={1} padding={0} direction='row'>
+                              <IconButton
+                                aria-label='edit'
+                                onClick={() => editar(adm.id)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                aria-label='delete'
+                                onClick={() => excluir(adm.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Stack>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Card>
-  </div>
+      </Card>
+    </div>
   );
 }
 

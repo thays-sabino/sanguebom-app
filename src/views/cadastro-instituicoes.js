@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
-
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -12,6 +15,21 @@ import { mensagemSucesso, mensagemErro, mensagemAlert } from '../components/toas
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import {
+  cepCompleto,
+  cnpjCompleto,
+  cpfCompleto,
+  limitarCep,
+  limitarCnpj,
+  limitarCpf,
+  limitarTelefone,
+  mascararCep,
+  mascararCnpj,
+  mascararCpf,
+  mascararTelefone,
+  somenteNumeros,
+  telefoneCompleto,
+} from '../services/mascaras';
 
 function CadastroInstituicoes() {
   const { idParam } = useParams();
@@ -22,6 +40,8 @@ function CadastroInstituicoes() {
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarSenhaRepeticao, setMostrarSenhaRepeticao] = useState(false);
   const [senhaRepeticao, setSenhaRepeticao] = useState('');
   const [razaoSocial, setRazaoSocial] = useState('');
   const [cnpj, setCnpj] = useState('');
@@ -30,14 +50,15 @@ function CadastroInstituicoes() {
   const [telefone, setTelefone] = useState('');
 
   // Campos de endereço direto no objeto hemocentro
-    const [logradouro, setLogradouro] = useState('');
-    const [numero, setNumero] = useState('');
-    const [bairro, setBairro] = useState('');
-    const [cidade, setCidade] = useState('');
-    const [uf, setUf] = useState('');
-    const [cep, setCep] = useState('');
+  const [logradouro, setLogradouro] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
+  const [cep, setCep] = useState('');
 
   const [dados, setDados] = useState(null);
+  const [usuario, setUsuario] = useState(null); // usuário (login) vinculado à instituição
 
   const senhasDiferentes = senhaRepeticao !== '' && senha !== senhaRepeticao;
 
@@ -46,12 +67,12 @@ function CadastroInstituicoes() {
     setSenha(instituicao.senha ?? '');
     setSenhaRepeticao(instituicao.senhaRepeticao ?? '');
     setRazaoSocial(instituicao.razaoSocial ?? '');
-    setCnpj(instituicao.cnpj ?? '');
+    setCnpj(somenteNumeros(instituicao.cnpj));
     setResponsavelTec(instituicao.responsavelTec ?? '');
-    setCpfRT(instituicao.cpfRT ?? '');
-    setTelefone(instituicao.telefone ?? '');
+    setCpfRT(somenteNumeros(instituicao.cpfRT));
+    setTelefone(somenteNumeros(instituicao.telefone));
 
-    setCep(instituicao.cep ?? '');
+    setCep(somenteNumeros(instituicao.cep));
     setLogradouro(instituicao.logradouro ?? '');
     setNumero(instituicao.numero ?? '');
     setBairro(instituicao.bairro ?? '');
@@ -60,23 +81,10 @@ function CadastroInstituicoes() {
   }
 
   function inicializar() {
-    // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-    
-    const estaVazio = !email && !senha &&!senhaRepeticao && !razaoSocial && !cnpj && !responsavelTec && !cpfRT && !telefone && !cep && !logradouro && !numero && !bairro && !cidade && !uf; // Verifica se os campos estão vazios
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-    
     if (idParam == null) {
-      preencher({});
+      preencher({});      // cadastro novo: limpa tudo
     } else if (dados) {
-      preencher(dados);
+      preencher(dados);   // edição: volta aos valores originais
     }
   }
 
@@ -94,75 +102,96 @@ function CadastroInstituicoes() {
       return;
     }
 
+    if (!cnpjCompleto(cnpj)) {
+      mensagemAlert('CNPJ incompleto. Confira os números informados.');
+      return;
+    }
+
+    if (!cpfCompleto(cpfRT)) {
+      mensagemAlert('CPF do responsável técnico incompleto. Confira os números informados.');
+      return;
+    }
+
+    if (!telefoneCompleto(telefone)) {
+      mensagemAlert('Telefone incompleto. Confira os números informados.');
+      return;
+    }
+
+    if (cep && !cepCompleto(cep)) {
+      mensagemAlert('CEP incompleto. Confira os números informados.');
+      return;
+    }
+
     if (senha !== senhaRepeticao) return;
 
-    if (idParam == null) {
-      const data = {
-        email,
-        senha,
-        senhaRepeticao,
-        razaoSocial,
-        cnpj,
-        responsavelTec,
-        cpfRT,
-        telefone,
-        logradouro, 
-        numero, 
-        bairro, 
-        cidade, 
-        uf, 
-        cep,
-      };
+    if (idParam != null && !dados) return;
 
-      await axios
-        .post(baseURL, JSON.stringify(data), {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function () {
-          mensagemSucesso(`Instituição ${razaoSocial} cadastrada com sucesso!`);
-          navigate(`/listagem-instituicoes`);
-        })
-        .catch(function (error) {
-          mensagemErro(
-            typeof error.response?.data === 'string' && error.response.data
-              ? error.response.data
-              : 'Erro ao cadastrar a instituição.'
-          );
-        });
-    } else {
-      const data = {
-        ...dados,
-        email,
-        senha,
-        senhaRepeticao,
-        razaoSocial,
-        cnpj,
-        responsavelTec,
-        cpfRT,
-        telefone,
-        logradouro, 
-        numero, 
-        bairro, 
-        cidade, 
-        uf, 
-        cep,
-      };
+    // E-mail e senha ficam na tabela de usuários (é de lá que a listagem lê);
+    // a instituição guarda apenas o idUsuario.
+    const login = { email, senha, senhaRepeticao };
 
-      await axios
-        .put(`${baseURL}/${idParam}`, JSON.stringify(data), {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function () {
-          mensagemSucesso(`Instituição ${razaoSocial} atualizada com sucesso!`);
-          navigate(`/listagem-instituicoes`);
-        })
-        .catch(function (error) {
-          mensagemErro(
-            typeof error.response?.data === 'string' && error.response.data
-              ? error.response.data
-              : 'Erro ao atualizar a instituição.'
-          );
-        });
+    const dadosInstituicao = {
+      razaoSocial,
+      cnpj,
+      responsavelTec,
+      cpfRT,
+      telefone,
+      logradouro,
+      numero,
+      bairro,
+      cidade,
+      uf,
+      cep,
+    };
+
+    const cabecalho = { headers: { 'Content-Type': 'application/json' } };
+
+    try {
+      // 1) cria ou atualiza o usuário
+      let idUsuario = usuario?.id;
+
+      if (idUsuario != null) {
+        await axios.put(
+          `${BASE_URL}/usuarios/${idUsuario}`,
+          JSON.stringify({ ...usuario, ...login }),
+          cabecalho
+        );
+      } else {
+        const resposta = await axios.post(
+          `${BASE_URL}/usuarios`,
+          JSON.stringify({ ...login, perfil: 'instituicao', status: true }),
+          cabecalho
+        );
+        idUsuario = resposta.data.id;
+      }
+
+      // 2) cria ou atualiza a instituição
+      if (idParam == null) {
+        await axios.post(
+          baseURL,
+          JSON.stringify({ ...dadosInstituicao, idUsuario }),
+          cabecalho
+        );
+        mensagemSucesso(`Instituição ${razaoSocial} cadastrada com sucesso!`);
+      } else {
+        // Remove e-mail/senha que versões antigas gravavam dentro da instituição
+        const { email: emailAntigo, senha: senhaAntiga, senhaRepeticao: repeticaoAntiga, ...instituicaoSemLogin } = dados;
+
+        await axios.put(
+          `${baseURL}/${idParam}`,
+          JSON.stringify({ ...instituicaoSemLogin, ...dadosInstituicao, idUsuario }),
+          cabecalho
+        );
+        mensagemSucesso(`Instituição ${razaoSocial} atualizada com sucesso!`);
+      }
+
+      navigate(`/listagem-instituicoes`);
+    } catch (error) {
+      mensagemErro(
+        typeof error.response?.data === 'string' && error.response.data
+          ? error.response.data
+          : 'Erro ao salvar a instituição.'
+      );
     }
   }
 
@@ -172,24 +201,22 @@ function CadastroInstituicoes() {
     const response = await axios.get(`${baseURL}/${idParam}`);
     const instituicao = response.data;
 
-    let emailAtual = instituicao.email ?? '';
-    let senhaAtual = instituicao.senha ?? '';
-    let repeticaoAtual = instituicao.senhaRepeticao ?? '';
-
-    if ((!emailAtual || !senhaAtual) && instituicao.idUsuario) {
-      const usuario = await axios.get(
+    // E-mail e senha vêm da tabela de usuários
+    let usuarioAtual = null;
+    if (instituicao.idUsuario) {
+      const resposta = await axios.get(
         `${BASE_URL}/usuarios/${instituicao.idUsuario}`
       );
-      emailAtual = emailAtual || (usuario.data.email ?? '');
-      senhaAtual = usuario.data.senha ?? '';
-      repeticaoAtual = usuario.data.senhaRepeticao ?? '';
+      usuarioAtual = resposta.data;
     }
+    setUsuario(usuarioAtual);
 
+    // Instituições antigas, sem usuário vinculado, ainda podem ter o e-mail dentro do próprio registro
     const completo = {
       ...instituicao,
-      email: emailAtual,
-      senha: senhaAtual,
-      senhaRepeticao: repeticaoAtual,
+      email: usuarioAtual?.email ?? instituicao.email ?? '',
+      senha: usuarioAtual?.senha ?? instituicao.senha ?? '',
+      senhaRepeticao: usuarioAtual?.senhaRepeticao ?? instituicao.senhaRepeticao ?? '',
     };
 
     setDados(completo);
@@ -203,6 +230,10 @@ function CadastroInstituicoes() {
 
   return (
     <div className='container tema-principal'>
+      {/* Botão de voltar para a listagem de instituições */}
+      <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-instituicoes')}>
+        <ArrowBackIcon />
+      </IconButton>
       <Card title='Cadastro de Instituição'>
         <div className='row'>
           <div className='col-lg-12'>
@@ -226,10 +257,11 @@ function CadastroInstituicoes() {
                     <input
                       type='text'
                       id='inputCnpj'
-                      value={cnpj}
+                      value={mascararCnpj(cnpj)}
+                      placeholder='00.000.000/0000-00'
                       className='form-control'
                       name='cnpj'
-                      onChange={(e) => setCnpj(e.target.value)}
+                      onChange={(e) => setCnpj(limitarCnpj(e.target.value))}
                     />
                   </FormGroup>
                 </div>
@@ -253,10 +285,11 @@ function CadastroInstituicoes() {
                     <input
                       type='text'
                       id='inputTelefone'
-                      value={telefone}
+                      value={mascararTelefone(telefone)}
+                      placeholder='(00) 0000-0000'
                       className='form-control'
                       name='telefone'
-                      onChange={(e) => setTelefone(e.target.value)}
+                      onChange={(e) => setTelefone(limitarTelefone(e.target.value))}
                     />
                   </FormGroup>
                 </div>
@@ -266,8 +299,8 @@ function CadastroInstituicoes() {
               <h5 className='secao-titulo'>Responsável Técnico</h5>
               <div className='row'>
                 <div className='col-md-6'>
-                  <FormGroup 
-                    label='Login: *' 
+                  <FormGroup
+                    label='Nome: *'
                     htmlFor='inputResponsavelTec'
                   >
                     <input
@@ -288,10 +321,11 @@ function CadastroInstituicoes() {
                     <input
                       type='text'
                       id='inputCpfRT'
-                      value={cpfRT}
+                      value={mascararCpf(cpfRT)}
+                      placeholder='000.000.000-00'
                       className='form-control'
                       name='cpfRT'
-                      onChange={(e) => setCpfRT(e.target.value)}
+                      onChange={(e) => setCpfRT(limitarCpf(e.target.value))}
                     />
                   </FormGroup>
                 </div>
@@ -306,10 +340,11 @@ function CadastroInstituicoes() {
                     <input
                       type='text'
                       id='inputCep'
-                      value={cep}
+                      value={mascararCep(cep)}
+                      placeholder='00000-000'
                       className='form-control'
                       name='cep'
-                      onChange={(e) => setCep(e.target.value)}
+                      onChange={(e) => setCep(limitarCep(e.target.value))}
                     />
                   </FormGroup>
                 </div>
@@ -378,19 +413,28 @@ function CadastroInstituicoes() {
                   </FormGroup>
                 </div>
               </div>
-              
+
               <hr className='my-4' />
               <div className='row'>
                 <div className='col-md-6'>
                   <FormGroup label='Senha: *' htmlFor='inputSenha'>
-                    <input
-                      type='password'
-                      id='inputSenha'
-                      value={senha}
-                      className='form-control'
-                      name='senha'
-                      onChange={(e) => setSenha(e.target.value)}
-                    />
+                    <div className='input-group'>
+                      <input
+                        type={mostrarSenha ? 'text' : 'password'}
+                        id='inputSenha'
+                        value={senha}
+                        className='form-control'
+                        name='senha'
+                        onChange={(e) => setSenha(e.target.value)}
+                      />
+                      <button
+                        type='button'
+                        className='btn btn-outline-secondary'
+                        onClick={() => setMostrarSenha(!mostrarSenha)}
+                      >
+                        {mostrarSenha ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </button>
+                    </div>
                   </FormGroup>
                 </div>
                 <div className='col-md-6'>
@@ -398,14 +442,23 @@ function CadastroInstituicoes() {
                     label='Repita a Senha: *'
                     htmlFor='inputSenhaRepeticao'
                   >
-                    <input
-                      type='password'
-                      id='inputSenhaRepeticao'
-                      value={senhaRepeticao}
-                      className='form-control'
-                      name='senhaRepeticao'
-                      onChange={(e) => setSenhaRepeticao(e.target.value)}
-                    />
+                    <div className='input-group'>
+                      <input
+                        type={mostrarSenhaRepeticao ? 'text' : 'password'}
+                        id='inputSenhaRepeticao'
+                        value={senhaRepeticao}
+                        className='form-control'
+                        name='senhaRepeticao'
+                        onChange={(e) => setSenhaRepeticao(e.target.value)}
+                      />
+                      <button
+                        type='button'
+                        className='btn btn-outline-secondary'
+                        onClick={() => setMostrarSenhaRepeticao(!mostrarSenhaRepeticao)}
+                      >
+                        {mostrarSenhaRepeticao ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </button>
+                    </div>
                     {senhasDiferentes && (
                       <small className='text-danger'>
                         As senhas não conferem.

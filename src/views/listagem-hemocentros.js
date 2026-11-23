@@ -14,6 +14,7 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { exibirCep, exibirCnpj, exibirTelefone } from '../services/mascaras';
 
 const baseURL = `${BASE_URL}/hemocentros`;
 const usuariosURL = `${BASE_URL}/usuarios`; // URL PARA BUSCAR USUARIOS --> PARA PEGAR O EMAIL
@@ -33,7 +34,7 @@ function ListagemHemocentros() {
   const [usuarios, setUsuarios] = useState([]); // PARA GUARDAR A LISTA DE USUARIOS
 
   useEffect(() => {
-    axios.get(baseURL).then((response) => { 
+    axios.get(baseURL).then((response) => {
       setHemocentros(response.data);
     });
 
@@ -76,6 +77,7 @@ function ListagemHemocentros() {
                       <th scope='col'>E-mail</th>
                       <th scope='col'>Endereço</th>
                       <th scope='col'>Telefone</th>
+                      <th scope='col'>Status</th>
                       <th scope='col'>Ações</th>
                     </tr>
                   </thead>
@@ -84,33 +86,34 @@ function ListagemHemocentros() {
                       const usuarioEncontrado = usuarios.find(
                         (u) => u.id === hemocentro.idUsuario
                       );
-                    
-                    return (
-                      <tr key={hemocentro.id}>
-                        <td>{hemocentro.razaoSocial}</td>
-                        <td>{hemocentro.cnpj}</td>
-                        <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
-                        <td>{hemocentro.logradouro}, n° {hemocentro.numero} - {hemocentro.bairro}, {hemocentro.cidade} - {hemocentro.uf}, CEP: {hemocentro.cep}</td>
-                        <td>{hemocentro.telefone}</td>
-                        <td>
-                          <Stack spacing={1} padding={0} direction='row'>
-                            <IconButton
-                              aria-label='edit'
-                              onClick={() => editar(hemocentro.id)}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              aria-label='delete'
-                              onClick={() => excluir(hemocentro.id)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Stack>
-                        </td>
-                      </tr>
-                    );
-                    })} 
+
+                      return (
+                        <tr key={hemocentro.id}>
+                          <td>{hemocentro.razaoSocial}</td>
+                          <td>{exibirCnpj(hemocentro.cnpj)}</td>
+                          <td>{usuarioEncontrado?.email ?? hemocentro.email ?? 'E-mail não encontrado'}</td>
+                          <td>{hemocentro.logradouro}, n° {hemocentro.numero} - {hemocentro.bairro}, {hemocentro.cidade} - {hemocentro.uf}, CEP: {exibirCep(hemocentro.cep)}</td>
+                          <td>{exibirTelefone(hemocentro.telefone)}</td>
+                          <td>{usuarioEncontrado ? (usuarioEncontrado.status ? 'Ativo' : 'Inativo') : '-'}</td>
+                          <td>
+                            <Stack spacing={1} padding={0} direction='row'>
+                              <IconButton
+                                aria-label='edit'
+                                onClick={() => editar(hemocentro.id)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                aria-label='delete'
+                                onClick={() => excluir(hemocentro.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Stack>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

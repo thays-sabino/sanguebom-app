@@ -5,6 +5,8 @@ import Stack from '@mui/material/Stack';
 import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import ReplyIcon from '@mui/icons-material/Reply';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 import Card from '../components/card';
 
@@ -26,6 +28,11 @@ function ListagemSolicitacoes() {
 
   const editar = (id) => {
     navigate(`/cadastro-solicitacoes/${id}`);
+  };
+
+  // Pendente: o hemocentro responde. Já respondida: abre a mesma tela só para consulta.
+  const responder = (id) => {
+    navigate(`/resposta-solicitacao/${id}`);
   };
 
   const [solicitacoes, setSolicitacoes] = useState([]);
@@ -101,7 +108,6 @@ function ListagemSolicitacoes() {
                 <table className='table table-hover'>
                   <thead>
                     <tr>
-                      <th scope='col'>ID</th>
                       <th scope='col'>Instituição</th>
                       <th scope='col'>Hemocentro</th>
                       <th scope='col'>Tipo Sanguíneo</th>
@@ -114,17 +120,33 @@ function ListagemSolicitacoes() {
                   <tbody>
                     {solicitacoes.map((solicitacao) => (
                       <tr key={solicitacao.id}>
-                        <td>{solicitacao.id}</td>
                         <td>{nomeInstituicao(solicitacao.idInstituicao)}</td>
                         <td>{nomeHemocentro(solicitacao.idHemocentro)}</td>
-
                         <td>{nomeTipoS(solicitacao.idTipoS)}</td>
-
                         <td>{solicitacao.urgencia}</td>
                         <td>{solicitacao.qtdSolicitada}</td>
                         <td>{solicitacao.status}</td>
                         <td>
                           <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label={
+                                solicitacao.status === 'Pendente'
+                                  ? 'responder'
+                                  : 'ver resposta'
+                              }
+                              title={
+                                solicitacao.status === 'Pendente'
+                                  ? 'Responder solicitação'
+                                  : 'Ver resposta'
+                              }
+                              onClick={() => responder(solicitacao.id)}
+                            >
+                              {solicitacao.status === 'Pendente' ? (
+                                <ReplyIcon />
+                              ) : (
+                                <VisibilityIcon />
+                              )}
+                            </IconButton>
                             <IconButton
                               aria-label='edit'
                               onClick={() => editar(solicitacao.id)}

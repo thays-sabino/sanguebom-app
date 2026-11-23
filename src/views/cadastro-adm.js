@@ -5,6 +5,10 @@ import Stack from '@mui/material/Stack';
 
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -23,9 +27,12 @@ function CadastroAdms() {
     const [login, setLogin] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [mostrarSenha, setMostrarSenha] = useState(false);
+    const [mostrarSenhaRepeticao, setMostrarSenhaRepeticao] = useState(false);
     const [senhaRepeticao, setSenhaRepeticao] = useState('');
 
     const [dados, setDados] = useState(null);
+    const [usuario, setUsuario] = useState(null); // usuário (login) vinculado
 
     const senhasDiferentes = senhaRepeticao !== '' && senha !== senhaRepeticao;
 
@@ -37,71 +44,83 @@ function CadastroAdms() {
     }
 
     function inicializar() {
-        // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-        
-        const estaVazio = !login && !email && !senha &&!senhaRepeticao; // Verifica se os campos estão vazios
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-        
         if (idParam == null) {
-            preencher({});
+            preencher({});      // cadastro novo: limpa tudo
         } else if (dados) {
-            preencher(dados);
+            preencher(dados);   // edição: volta aos valores originais
         }
     }
 
     async function salvar() {
-        if (!login || !email || (idParam == null && !senha)) {
+        if (
+            !login ||
+            !email ||
+            (idParam == null && !senha)
+        ) {
             mensagemAlert('Preencha todos os campos obrigatórios.');
             return;
         }
 
         if (senha !== senhaRepeticao) return;
 
-        if (idParam == null) {
-            const data = { login, email, senha, senhaRepeticao };
+        if (idParam != null && !dados) return;
 
-            await axios
-                .post(baseURL, JSON.stringify(data), {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function () {
-                    mensagemSucesso(`Administrador ${login} cadastrado com sucesso!`);
-                    navigate(`/listagem-adms`);
-                })
-                .catch(function (error) {
-                    mensagemErro(
-                        typeof error.response?.data === 'string' && error.response.data
-                            ? error.response.data
-                            : 'Erro ao cadastrar o administrador.'
-                    );
-                });
-        } else {
-            // O PUT substitui o registro inteiro, então mantém os campos que já existiam
-            const data = { ...dados, login, email, senha, senhaRepeticao };
+        // E-mail e senha ficam na tabela de usuários (é de lá que as listagens leem);
+        // o administrador guarda apenas o idUsuario.
+        const credenciais = { email, senha, senhaRepeticao };
 
-            await axios
-                .put(`${baseURL}/${idParam}`, JSON.stringify(data), {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function () {
-                    mensagemSucesso(`Administrador ${login} atualizado com sucesso!`);
-                    navigate(`/listagem-adms`);
-                })
-                .catch(function (error) {
-                    mensagemErro(
-                        typeof error.response?.data === 'string' && error.response.data
-                            ? error.response.data
-                            : 'Erro ao atualizar o administrador.'
-                    );
-                });
+        const dadosAdm = {
+            login,
+        };
+
+        const cabecalho = { headers: { 'Content-Type': 'application/json' } };
+
+        try {
+            // 1) cria ou atualiza o usuário
+            let idUsuario = usuario?.id;
+
+            if (idUsuario != null) {
+                await axios.put(
+                    `${BASE_URL}/usuarios/${idUsuario}`,
+                    JSON.stringify({ ...usuario, ...credenciais }),
+                    cabecalho
+                );
+            } else {
+                const resposta = await axios.post(
+                    `${BASE_URL}/usuarios`,
+                    JSON.stringify({ ...credenciais, perfil: 'adm', status: true }),
+                    cabecalho
+                );
+                idUsuario = resposta.data.id;
+            }
+
+            // 2) cria ou atualiza o registro
+            if (idParam == null) {
+                await axios.post(
+                    baseURL,
+                    JSON.stringify({ ...dadosAdm, idUsuario }),
+                    cabecalho
+                );
+                mensagemSucesso(`Administrador ${login} cadastrado com sucesso!`);
+            } else {
+                // Remove e-mail/senha que versões antigas gravavam dentro do registro
+                const { email: emailAntigo, senha: senhaAntiga, senhaRepeticao: repeticaoAntiga, ...semLogin } = dados;
+
+                await axios.put(
+                    `${baseURL}/${idParam}`,
+                    JSON.stringify({ ...semLogin, ...dadosAdm, idUsuario }),
+                    cabecalho
+                );
+                mensagemSucesso(`Administrador ${login} atualizado com sucesso!`);
+            }
+
+            navigate(`/listagem-adms`);
+        } catch (error) {
+            mensagemErro(
+                typeof error.response?.data === 'string' && error.response.data
+                    ? error.response.data
+                    : 'Erro ao salvar o administrador.'
+            );
         }
     }
 
@@ -109,32 +128,30 @@ function CadastroAdms() {
         if (idParam == null) return;
 
         const response = await axios.get(`${baseURL}/${idParam}`);
-        const adm = response.data;
+        const registro = response.data;
 
-        let emailAtual = adm.email ?? '';
-        let senhaAtual = adm.senha ?? '';
-        let repeticaoAtual = adm.senhaRepeticao ?? '';
-
-        // Só no fake: a senha de um administrador antigo fica em usuarios.
-        // Com o backend real, apagar este bloco.
-        if ((!emailAtual || !senhaAtual) && adm.idUsuario) {
-            const usuario = await axios.get(`${BASE_URL}/usuarios/${adm.idUsuario}`);
-            emailAtual = emailAtual || (usuario.data.email ?? '');
-            senhaAtual = senhaAtual || (usuario.data.senha ?? '');
-            repeticaoAtual = repeticaoAtual || (usuario.data.senhaRepeticao ?? '');
+        // E-mail e senha vêm da tabela de usuários
+        let usuarioAtual = null;
+        if (registro.idUsuario) {
+            const resposta = await axios.get(
+                `${BASE_URL}/usuarios/${registro.idUsuario}`
+            );
+            usuarioAtual = resposta.data;
         }
+        setUsuario(usuarioAtual);
 
+        // Registros antigos, sem usuário vinculado, ainda podem ter o e-mail dentro do próprio registro
         const completo = {
-            ...adm,
-            email: emailAtual,
-            senha: senhaAtual,
-            senhaRepeticao: repeticaoAtual,
+            ...registro,
+            email: usuarioAtual?.email ?? registro.email ?? '',
+            senha: usuarioAtual?.senha ?? registro.senha ?? '',
+            senhaRepeticao: usuarioAtual?.senhaRepeticao ?? registro.senhaRepeticao ?? '',
         };
 
         setDados(completo);
         preencher(completo);
     }
-    
+
     useEffect(() => {
         buscar();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,6 +159,10 @@ function CadastroAdms() {
 
     return (
         <div className='container tema-principal'>
+            {/* Botão de voltar para a listagem de administradores */}
+            <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-adms')}>
+                <ArrowBackIcon />
+            </IconButton>
             <Card title='Cadastro de Administrador'>
                 <div className='row'>
                     <div className='col-lg-12'>
@@ -167,27 +188,45 @@ function CadastroAdms() {
                                 />
                             </FormGroup>
                             <FormGroup label='Senha: *' htmlFor='inputSenha'>
-                                <input
-                                    type='password'
-                                    id='inputSenha'
-                                    value={senha}
-                                    className='form-control'
-                                    name='senha'
-                                    onChange={(e) => setSenha(e.target.value)}
-                                />
+                                <div className='input-group'>
+                                    <input
+                                        type={mostrarSenha ? 'text' : 'password'}
+                                        id='inputSenha'
+                                        value={senha}
+                                        className='form-control'
+                                        name='senha'
+                                        onChange={(e) => setSenha(e.target.value)}
+                                    />
+                                    <button
+                                        type='button'
+                                        className='btn btn-outline-secondary'
+                                        onClick={() => setMostrarSenha(!mostrarSenha)}
+                                    >
+                                        {mostrarSenha ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </button>
+                                </div>
                             </FormGroup>
                             <FormGroup
                                 label='Repita a Senha: *'
                                 htmlFor='inputSenhaRepeticao'
                             >
-                                <input
-                                    type='password'
-                                    id='inputSenhaRepeticao'
-                                    value={senhaRepeticao}
-                                    className='form-control'
-                                    name='senhaRepeticao'
-                                    onChange={(e) => setSenhaRepeticao(e.target.value)}
-                                />
+                                <div className='input-group'>
+                                    <input
+                                        type={mostrarSenhaRepeticao ? 'text' : 'password'}
+                                        id='inputSenhaRepeticao'
+                                        value={senhaRepeticao}
+                                        className='form-control'
+                                        name='senhaRepeticao'
+                                        onChange={(e) => setSenhaRepeticao(e.target.value)}
+                                    />
+                                    <button
+                                        type='button'
+                                        className='btn btn-outline-secondary'
+                                        onClick={() => setMostrarSenhaRepeticao(!mostrarSenhaRepeticao)}
+                                    >
+                                        {mostrarSenhaRepeticao ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </button>
+                                </div>
                                 {senhasDiferentes && (
                                     <small className='text-danger'>
                                         As senhas não conferem.

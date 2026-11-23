@@ -2,16 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
-
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
-import { mensagemSucesso,mensagemErro, mensagemAlert } from '../components/toastr';
+import { mensagemSucesso, mensagemErro, mensagemAlert } from '../components/toastr';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import {
+    cpfCompleto,
+    limitarCpf,
+    limitarTelefone,
+    mascararCpf,
+    mascararTelefone,
+    somenteNumeros,
+    telefoneCompleto,
+} from '../services/mascaras';
 
 function CadastroDoadores() {
     const { idParam } = useParams();
@@ -23,6 +35,8 @@ function CadastroDoadores() {
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [mostrarSenha, setMostrarSenha] = useState(false);
+    const [mostrarSenhaRepeticao, setMostrarSenhaRepeticao] = useState(false);
     const [senhaRepeticao, setSenhaRepeticao] = useState('');
     const [cpf, setCpf] = useState('');
     const [dtNasc, setDtNasc] = useState('');
@@ -33,6 +47,7 @@ function CadastroDoadores() {
     const [tipos, setTipos] = useState([]);
 
     const [dados, setDados] = useState(null);
+    const [usuario, setUsuario] = useState(null); // usuário (login) vinculado
 
     const senhasDiferentes = senhaRepeticao !== '' && senha !== senhaRepeticao;
 
@@ -67,31 +82,18 @@ function CadastroDoadores() {
         setEmail(doador.email ?? '');
         setSenha(doador.senha ?? '');
         setSenhaRepeticao(doador.senhaRepeticao ?? '');
-        setCpf(doador.cpf ?? '');
+        setCpf(somenteNumeros(doador.cpf));
         setDtNasc(paraISO(doador.dtNasc ?? ''));
         setSexo(doador.sexo ?? '');
-        setCelular(doador.celular ?? '');
-        setIdTipoS(doador.idTipoS != null ? String(doador.idTipoS): '');
+        setCelular(somenteNumeros(doador.celular));
+        setIdTipoS(doador.idTipoS != null ? String(doador.idTipoS) : '');
     }
 
     function inicializar() {
-        // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-        
-        const estaVazio = !nome && !email && !senha && !senhaRepeticao && !cpf && !dtNasc && !sexo && !celular && !idTipoS; // Verifica se os campos estão vazios
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-        
-        if (idParam == null) { // Caso contrario, limpa os campos
-            preencher({});
+        if (idParam == null) {
+            preencher({});      // cadastro novo: limpa tudo
         } else if (dados) {
-            preencher(dados);
+            preencher(dados);   // edição: volta aos valores originais
         }
     }
 
@@ -110,66 +112,81 @@ function CadastroDoadores() {
             return;
         }
 
+        if (!cpfCompleto(cpf)) {
+            mensagemAlert('CPF incompleto. Confira os números informados.');
+            return;
+        }
+
+        if (!telefoneCompleto(celular)) {
+            mensagemAlert('Celular incompleto. Confira os números informados.');
+            return;
+        }
+
         if (senha !== senhaRepeticao) return;
 
-        if (idParam == null) {
-            const data = {
-                nome,
-                email,
-                senha,
-                senhaRepeticao,
-                cpf,
-                dtNasc: paraBR(dtNasc),
-                sexo,
-                celular,
-                idTipoS: Number(idTipoS),
-            };
+        if (idParam != null && !dados) return;
 
-            await axios
-                .post(baseURL, JSON.stringify(data), {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function () {
-                    mensagemSucesso(`Doador ${nome} cadastrado com sucesso!`);
-                    navigate(`/listagem-doadores`);
-                })
-                .catch(function (error) {
-                    mensagemErro(
-                        typeof error.response?.data === 'string' && error.response.data
-                            ? error.response.data
-                            : 'Erro ao cadastrar o doador.'
-                    );
-                });
-        } else {
-            // O PUT substitui o registro inteiro, então mantém os campos que já existiam
-            const data = {
-                ...dados,
-                nome,
-                email,
-                senha,
-                senhaRepeticao,
-                cpf,
-                dtNasc,
-                sexo,
-                celular,
-                idTipoS: Number(idTipoS),
-            };
+        // E-mail e senha ficam na tabela de usuários (é de lá que as listagens leem);
+        // o doador guarda apenas o idUsuario.
+        const login = { email, senha, senhaRepeticao };
 
-            await axios
-                .put(`${baseURL}/${idParam}`, JSON.stringify(data), {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function () {
-                    mensagemSucesso(`Doador ${nome} atualizado com sucesso!`);
-                    navigate(`/listagem-doadores`);
-                })
-                .catch(function (error) {
-                    mensagemErro(
-                        typeof error.response?.data === 'string' && error.response.data
-                            ? error.response.data
-                            : 'Erro ao atualizar o doador.'
-                    );
-                });
+        const dadosDoador = {
+            nome,
+            cpf,
+            dtNasc: paraBR(dtNasc),
+            sexo,
+            celular,
+            idTipoS: Number(idTipoS),
+        };
+
+        const cabecalho = { headers: { 'Content-Type': 'application/json' } };
+
+        try {
+            // 1) cria ou atualiza o usuário
+            let idUsuario = usuario?.id;
+
+            if (idUsuario != null) {
+                await axios.put(
+                    `${BASE_URL}/usuarios/${idUsuario}`,
+                    JSON.stringify({ ...usuario, ...login }),
+                    cabecalho
+                );
+            } else {
+                const resposta = await axios.post(
+                    `${BASE_URL}/usuarios`,
+                    JSON.stringify({ ...login, perfil: 'doador', status: true }),
+                    cabecalho
+                );
+                idUsuario = resposta.data.id;
+            }
+
+            // 2) cria ou atualiza o registro
+            if (idParam == null) {
+                await axios.post(
+                    baseURL,
+                    JSON.stringify({ ...dadosDoador, idUsuario }),
+                    cabecalho
+                );
+                mensagemSucesso(`Doador ${nome} cadastrado com sucesso!`);
+            } else {
+                // Remove e-mail/senha que versões antigas gravavam dentro do registro
+                const { email: emailAntigo, senha: senhaAntiga, senhaRepeticao: repeticaoAntiga, ...semLogin } = dados;
+
+                await axios.put(
+                    `${baseURL}/${idParam}`,
+                    JSON.stringify({ ...semLogin, ...dadosDoador, idUsuario }),
+                    cabecalho
+                );
+                mensagemSucesso(`Doador ${nome} atualizado com sucesso!`);
+            }
+
+            navigate(`/listagem-doadores`);
+        } catch (error) {
+            mensagemErro(
+                typeof error.response?.data === 'string' && error.response.data
+                    ? error.response.data
+                    : 'Erro ao salvar o doador.'
+            );
         }
     }
 
@@ -177,28 +194,24 @@ function CadastroDoadores() {
         if (idParam == null) return;
 
         const response = await axios.get(`${baseURL}/${idParam}`);
-        const doador = response.data;
+        const registro = response.data;
 
-        let emailAtual = doador.email ?? '';
-        let senhaAtual = doador.senha ?? '';
-        let repeticaoAtual = doador.senhaRepeticao ?? '';
-
-        // Só no fake: a senha de um doador antigo fica em usuarios.
-        // Com o backend real, apagar este bloco.
-        if ((!emailAtual || !senhaAtual) && doador.idUsuario) {
-            const usuario = await axios.get(
-                `${BASE_URL}/usuarios/${doador.idUsuario}`
+        // E-mail e senha vêm da tabela de usuários
+        let usuarioAtual = null;
+        if (registro.idUsuario) {
+            const resposta = await axios.get(
+                `${BASE_URL}/usuarios/${registro.idUsuario}`
             );
-            emailAtual = emailAtual || (usuario.data.email ?? '');
-            senhaAtual = senhaAtual || (usuario.data.senha ?? '');
-            repeticaoAtual = repeticaoAtual || (usuario.data.senhaRepeticao ?? '');
+            usuarioAtual = resposta.data;
         }
+        setUsuario(usuarioAtual);
 
+        // Registros antigos, sem usuário vinculado, ainda podem ter o e-mail dentro do próprio registro
         const completo = {
-            ...doador,
-            email: emailAtual,
-            senha: senhaAtual,
-            senhaRepeticao: repeticaoAtual,
+            ...registro,
+            email: usuarioAtual?.email ?? registro.email ?? '',
+            senha: usuarioAtual?.senha ?? registro.senha ?? '',
+            senhaRepeticao: usuarioAtual?.senhaRepeticao ?? registro.senhaRepeticao ?? '',
         };
 
         setDados(completo);
@@ -215,9 +228,13 @@ function CadastroDoadores() {
         buscar();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idParam]);
-    
+
     return (
         <div className='container tema-principal'>
+            {/* Botão de voltar para a listagem de doadores */}
+            <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-doadores')}>
+                <ArrowBackIcon />
+            </IconButton>
             <Card title='Cadastro de Doador'>
                 <div className='row'>
                     <div className='col-lg-12'>
@@ -241,10 +258,11 @@ function CadastroDoadores() {
                                         <input
                                             type='text'
                                             id='inputCpf'
-                                            value={cpf}
+                                            value={mascararCpf(cpf)}
+                                            placeholder='000.000.000-00'
                                             className='form-control'
                                             name='cpf'
-                                            onChange={(e) => setCpf(e.target.value)}
+                                            onChange={(e) => setCpf(limitarCpf(e.target.value))}
                                         />
                                     </FormGroup>
                                 </div>
@@ -276,8 +294,8 @@ function CadastroDoadores() {
                                             onChange={(e) => setSexo(e.target.value)}
                                         >
                                             <option value=''>Selecione</option>
-                                            <option value='feminino'>Feminino</option>
-                                            <option value='masculino'>Masculino</option>
+                                            <option value='Feminino'>Feminino</option>
+                                            <option value='Masculino'>Masculino</option>
                                         </select>
                                     </FormGroup>
                                 </div>
@@ -319,10 +337,11 @@ function CadastroDoadores() {
                                         <input
                                             type='text'
                                             id='inputCelular'
-                                            value={celular}
+                                            value={mascararTelefone(celular)}
+                                            placeholder='(00) 9 0000-0000'
                                             className='form-control'
                                             name='celular'
-                                            onChange={(e) => setCelular(e.target.value)}
+                                            onChange={(e) => setCelular(limitarTelefone(e.target.value))}
                                         />
                                     </FormGroup>
                                 </div>
@@ -332,26 +351,44 @@ function CadastroDoadores() {
                             <div className='row'>
                                 <div className='col-md-6'>
                                     <FormGroup label='Senha: *' htmlFor='inputSenha'>
-                                        <input
-                                            type='password'
-                                            id='inputSenha'
-                                            value={senha}
-                                            className='form-control'
-                                            name='senha'
-                                            onChange={(e) => setSenha(e.target.value)}
-                                        />
+                                        <div className='input-group'>
+                                            <input
+                                                type={mostrarSenha ? 'text' : 'password'}
+                                                id='inputSenha'
+                                                value={senha}
+                                                className='form-control'
+                                                name='senha'
+                                                onChange={(e) => setSenha(e.target.value)}
+                                            />
+                                            <button
+                                                type='button'
+                                                className='btn btn-outline-secondary'
+                                                onClick={() => setMostrarSenha(!mostrarSenha)}
+                                            >
+                                                {mostrarSenha ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                            </button>
+                                        </div>
                                     </FormGroup>
                                 </div>
                                 <div className='col-md-6'>
                                     <FormGroup label='Repita a Senha: *' htmlFor='inputSenhaRepeticao'>
-                                        <input
-                                            type='password'
-                                            id='inputSenhaRepeticao'
-                                            value={senhaRepeticao}
-                                            className='form-control'
-                                            name='senhaRepeticao'
-                                            onChange={(e) => setSenhaRepeticao(e.target.value)}
-                                        />
+                                        <div className='input-group'>
+                                            <input
+                                                type={mostrarSenhaRepeticao ? 'text' : 'password'}
+                                                id='inputSenhaRepeticao'
+                                                value={senhaRepeticao}
+                                                className='form-control'
+                                                name='senhaRepeticao'
+                                                onChange={(e) => setSenhaRepeticao(e.target.value)}
+                                            />
+                                            <button
+                                                type='button'
+                                                className='btn btn-outline-secondary'
+                                                onClick={() => setMostrarSenhaRepeticao(!mostrarSenhaRepeticao)}
+                                            >
+                                                {mostrarSenhaRepeticao ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                            </button>
+                                        </div>
                                         {senhasDiferentes && (
                                             <small className='text-danger'>
                                                 As senhas não conferem.

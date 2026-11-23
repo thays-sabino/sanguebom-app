@@ -14,6 +14,7 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { exibirCpf, exibirTelefone } from '../services/mascaras';
 
 const baseURL = `${BASE_URL}/doadores`;
 const usuariosURL = `${BASE_URL}/usuarios`;
@@ -55,7 +56,7 @@ function ListagemDoadores() {
         setDoadores(doadores.filter((doador) => doador.id !== id));
         mensagemSucesso('Doador excluído com sucesso!');
       })
-      .catch(() =>{
+      .catch(() => {
         mensagemErro('Erro ao excluir o doador.');
       });
   }
@@ -85,12 +86,14 @@ function ListagemDoadores() {
                   <thead>
                     <tr>
                       <th scope='col'>Nome</th>
+                      <th scope='col'>Tipo Sanguíneo</th>
                       <th scope='col'>E-mail</th>
                       <th scope='col'>CPF</th>
                       <th scope='col'>Data de Nascimento</th>
                       <th scope='col'>Sexo</th>
                       <th scope='col'>Celular</th>
-                      <th scope='col'>Tipo Sanguíneo</th>
+
+                      <th scope='col'>Status</th>
                       <th scope='col'>Ações</th>
                     </tr>
                   </thead>
@@ -99,43 +102,44 @@ function ListagemDoadores() {
                       const usuarioEncontrado = usuarios.find(
                         (u) => String(u.id) === String(doador.idUsuario)
                       );
-                    
-                    return(
-                      <tr key={doador.id}>
-                        <td>{doador.nome}</td>
-                        <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
-                        <td>{doador.cpf}</td>
-                        <td>{doador.dtNasc}</td>
-                        <td>{doador.sexo}</td>
-                        <td>{doador.celular}</td>
-                        <td>{nomeTipoSanguineo(doador.idTipoS)}</td>
-                        <td>
-                          <Stack spacing={1} padding={0} direction='row'>
-                            <IconButton
-                              aria-label='edit'
-                              onClick={() => editar(doador.id)}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              aria-label='delete'
-                              onClick={() => excluir(doador.id)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Stack>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+
+                      return (
+                        <tr key={doador.id}>
+                          <td>{doador.nome}</td>
+                          <td>{nomeTipoSanguineo(doador.idTipoS)}</td>
+                          <td>{usuarioEncontrado?.email ?? doador.email ?? 'E-mail não encontrado'}</td>
+                          <td>{exibirCpf(doador.cpf)}</td>
+                          <td>{doador.dtNasc}</td>
+                          <td>{doador.sexo}</td>
+                          <td>{exibirTelefone(doador.celular)}</td>
+                          <td>{usuarioEncontrado ? (usuarioEncontrado.status ? 'Ativo' : 'Inativo') : '-'}</td>
+                          <td>
+                            <Stack spacing={1} padding={0} direction='row'>
+                              <IconButton
+                                aria-label='edit'
+                                onClick={() => editar(doador.id)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                aria-label='delete'
+                                onClick={() => excluir(doador.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Stack>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Card>
-  </div>
+      </Card>
+    </div>
   );
 }
 

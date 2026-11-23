@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
-
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -36,68 +37,38 @@ function CadastroEstoques() {
     }
 
     function inicializar() {
-        // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-        
-        const estaVazio = !idTipoS && !qtdMl && !idHemocentro; // Verifica se os campos estão vazios
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-        
-        if (idParam == null) {
-            preencher({});
-        } else if (dados) {
+        // Volta ao último valor salvo
+        if (dados) {
             preencher(dados);
         }
     }
 
+    // O estoque não é cadastrado nem excluído: cada hemocentro tem uma linha por tipo
+    // sanguíneo (os tipos são fixos), e aqui só se altera a quantidade.
     async function salvar() {
-        if (!idTipoS || qtdMl === '' || !idHemocentro) {
-            mensagemAlert('Preencha todos os campos obrigatórios.');
+        if (qtdMl === '') {
+            mensagemAlert('Informe a quantidade em ml.');
             return;
         }
 
-        const data = { idTipoS: Number(idTipoS), qtdMl, idHemocentro: Number(idHemocentro), };
+        if (!dados) return;
 
-        if (idParam == null) {
-            await axios
-                .post(baseURL, JSON.stringify(data), {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function () {
-                    mensagemSucesso('Estoque cadastrado com sucesso!');
-                    navigate(`/listagem-estoques`);
-                })
-                .catch(function (error) {
-                    mensagemErro(
-                        typeof error.response?.data === 'string' && error.response.data
-                            ? error.response.data
-                            : 'Erro ao cadastrar o estoque.'
-                    );
-                });
-        } else {
-            // O PUT substitui o registro inteiro, então mantém o id e o que já existia
-            await axios
-                .put(`${baseURL}/${idParam}`, JSON.stringify({ ...dados, ...data }), {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function () {
-                    mensagemSucesso('Estoque atualizado com sucesso!');
-                    navigate(`/listagem-estoques`);
-                })
-                .catch(function (error) {
-                    mensagemErro(
-                        typeof error.response?.data === 'string' && error.response.data
-                            ? error.response.data
-                            : 'Erro ao atualizar o estoque.'
-                    );
-                });
-        }
+        // O PUT substitui o registro inteiro, então mantém o id, o hemocentro e o tipo
+        await axios
+            .put(`${baseURL}/${idParam}`, JSON.stringify({ ...dados, qtdMl: Number(qtdMl) }), {
+                headers: { 'Content-Type': 'application/json' },
+            })
+            .then(function () {
+                mensagemSucesso('Estoque atualizado com sucesso!');
+                navigate(`/listagem-estoques`);
+            })
+            .catch(function (error) {
+                mensagemErro(
+                    typeof error.response?.data === 'string' && error.response.data
+                        ? error.response.data
+                        : 'Erro ao atualizar o estoque.'
+                );
+            });
     }
 
     async function buscar() {
@@ -120,22 +91,32 @@ function CadastroEstoques() {
     }, []);
 
     useEffect(() => {
+        // Não existe cadastro de estoque novo: sem id, volta para a listagem
+        if (idParam == null) {
+            navigate('/listagem-estoques');
+            return;
+        }
         buscar();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idParam]);
 
     return (
         <div className='container tema-principal'>
-            <Card title='Cadastro de Estoque'>
+            {/* Botão de voltar para a listagem de estoques */}
+            <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-estoques')}>
+                <ArrowBackIcon />
+            </IconButton>
+            <Card title='Editar Estoque'>
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
-                             <FormGroup label='Hemocentro: *' htmlFor='inputHemocentro'>
+                            <FormGroup label='Hemocentro:' htmlFor='inputHemocentro'>
                                 <select
                                     id='inputHemocentro'
                                     value={String(idHemocentro)}
                                     className='form-control'
                                     name='idHemocentro'
+                                    disabled
                                     onChange={(e) =>
                                         setIdHemocentro(e.target.value)
                                     }
@@ -148,12 +129,13 @@ function CadastroEstoques() {
                                     ))}
                                 </select>
                             </FormGroup>
-                            <FormGroup label='Tipo Sanguíneo: *' htmlFor='inputTipoS'>
+                            <FormGroup label='Tipo Sanguíneo:' htmlFor='inputTipoS'>
                                 <select
                                     id='inputTipoS'
                                     value={String(idTipoS)}
                                     className='form-control'
                                     name='idTipoS'
+                                    disabled
                                     onChange={(e) => setIdTipoS(e.target.value)}
                                 >
                                     <option value=''>Selecione</option>
@@ -175,7 +157,7 @@ function CadastroEstoques() {
                                     onChange={(e) => setQtdMl(e.target.value)}
                                 />
                             </FormGroup>
-                           <Stack spacing={1} padding={1} direction='row'>
+                            <Stack spacing={1} padding={1} direction='row'>
                                 <button
                                     onClick={salvar}
                                     type='button'

@@ -4,6 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Stack from '@mui/material/Stack';
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -22,6 +26,8 @@ function CadastroUsuarios() {
     const [id, setId] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [mostrarSenha, setMostrarSenha] = useState(false);
+    const [mostrarSenhaRepeticao, setMostrarSenhaRepeticao] = useState(false);
     const [senhaRepeticao, setSenhaRepeticao] = useState('');
     const [perfil, setPerfil] = useState('');
     const [status, setStatus] = useState(true);
@@ -40,23 +46,10 @@ function CadastroUsuarios() {
     }
 
     function inicializar() {
-        // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-        
-        const estaVazio = !email && !senha &&!senhaRepeticao && !perfil; // Verifica se os campos estão vazios
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-        
         if (idParam == null) {
-            preencher({});
+            preencher({});      // cadastro novo: limpa tudo
         } else if (dados) {
-            preencher(dados);
+            preencher(dados);   // edição: volta aos valores originais
         }
     }
 
@@ -120,6 +113,10 @@ function CadastroUsuarios() {
 
     return (
         <div className='container tema-principal'>
+            {/* Botão de voltar para a listagem de usuários */}
+            <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-usuarios')}>
+                <ArrowBackIcon />
+            </IconButton>
             <Card title='Cadastro de Usuário'>
                 <div className='row'>
                     <div className='col-lg-12'>
@@ -162,27 +159,45 @@ function CadastroUsuarios() {
                                 />
                             </FormGroup>
                             <FormGroup label='Senha: *' htmlFor='inputSenha'>
-                                <input
-                                    type='password'
-                                    id='inputSenha'
-                                    value={senha}
-                                    className='form-control'
-                                    name='senha'
-                                    onChange={(e) => setSenha(e.target.value)}
-                                />
+                                <div className='input-group'>
+                                    <input
+                                        type={mostrarSenha ? 'text' : 'password'}
+                                        id='inputSenha'
+                                        value={senha}
+                                        className='form-control'
+                                        name='senha'
+                                        onChange={(e) => setSenha(e.target.value)}
+                                    />
+                                    <button
+                                        type='button'
+                                        className='btn btn-outline-secondary'
+                                        onClick={() => setMostrarSenha(!mostrarSenha)}
+                                    >
+                                        {mostrarSenha ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </button>
+                                </div>
                             </FormGroup>
                             <FormGroup
                                 label='Repita a Senha: *'
                                 htmlFor='inputSenhaRepeticao'
                             >
-                                <input
-                                    type='password'
-                                    id='inputSenhaRepeticao'
-                                    value={senhaRepeticao}
-                                    className='form-control'
-                                    name='senhaRepeticao'
-                                    onChange={(e) => setSenhaRepeticao(e.target.value)}
-                                />
+                                <div className='input-group'>
+                                    <input
+                                        type={mostrarSenhaRepeticao ? 'text' : 'password'}
+                                        id='inputSenhaRepeticao'
+                                        value={senhaRepeticao}
+                                        className='form-control'
+                                        name='senhaRepeticao'
+                                        onChange={(e) => setSenhaRepeticao(e.target.value)}
+                                    />
+                                    <button
+                                        type='button'
+                                        className='btn btn-outline-secondary'
+                                        onClick={() => setMostrarSenhaRepeticao(!mostrarSenhaRepeticao)}
+                                    >
+                                        {mostrarSenhaRepeticao ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </button>
+                                </div>
                                 {senhasDiferentes && (
                                     <small className='text-danger'>
                                         As senhas não conferem.

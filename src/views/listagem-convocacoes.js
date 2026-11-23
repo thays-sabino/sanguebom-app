@@ -87,7 +87,6 @@ function ListagemConvocacoes() {
                 <table className='table table-hover'>
                   <thead>
                     <tr>
-                      <th scope='col'>ID</th>
                       <th scope='col'>Hemocentro</th>
                       <th scope='col'>Urgência</th>
                       <th scope='col'>Tipo Sanguíneo</th>
@@ -98,7 +97,6 @@ function ListagemConvocacoes() {
                   <tbody>
                     {convocacoes.map((convocacao) => (
                       <tr key={convocacao.id}>
-                        <td>{convocacao.id}</td>
                         <td>{nomeHemocentro(convocacao.idHemocentro)}</td>
                         <td>{convocacao.urgencia}</td>
 

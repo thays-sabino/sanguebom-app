@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
-
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -38,23 +39,10 @@ function CadastroConvocacoes() {
     }
 
     function inicializar() {
-        // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-        
-        const estaVazio = !idTipoS && !urgencia && !idHemocentro; // Verifica se os campos estão vazios
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-        
         if (idParam == null) {
-            preencher({});
+            preencher({});      // cadastro novo: limpa tudo
         } else if (dados) {
-            preencher(dados);
+            preencher(dados);   // edição: volta aos valores originais
         }
     }
 
@@ -64,11 +52,11 @@ function CadastroConvocacoes() {
             return;
         }
 
-        const data = { 
-            idTipoS: Number(idTipoS), 
-            urgencia, 
-            status, 
-            idHemocentro: Number(idHemocentro) 
+        const data = {
+            idTipoS: Number(idTipoS),
+            urgencia,
+            status,
+            idHemocentro: Number(idHemocentro)
         };
 
         if (idParam == null) {
@@ -133,7 +121,10 @@ function CadastroConvocacoes() {
 
     return (
         <div className='container tema-principal'>
-            <Card title='Cadastro de Convocação'>
+            {/* Botão de voltar para a listagem de convocações */}
+            <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-convocacoes')}>
+                <ArrowBackIcon />
+            </IconButton>            <Card title='Cadastro de Convocação'>
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>

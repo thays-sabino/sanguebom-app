@@ -14,6 +14,7 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { exibirCep, exibirCnpj, exibirCpf, exibirTelefone } from '../services/mascaras';
 
 const baseURL = `${BASE_URL}/instituicoes`;
 const usuariosURL = `${BASE_URL}/usuarios`;
@@ -80,6 +81,7 @@ function ListagemInstituicoes() {
                       <th scope='col'>CPF - Responsável Téc.</th>
                       <th scope='col'>Endereço</th>
                       <th scope='col'>Telefone</th>
+                      <th scope='col'>Status</th>
                       <th scope='col'>Ações</th>
                     </tr>
                   </thead>
@@ -89,33 +91,34 @@ function ListagemInstituicoes() {
                         (u) => u.id === instituicao.idUsuario
                       );
 
-                    return(
-                      <tr key={instituicao.id}>
-                        <td>{instituicao.razaoSocial}</td>
-                        <td>{instituicao.cnpj}</td>
-                        <td>{usuarioEncontrado ? usuarioEncontrado.email : 'E-mail não encontrado'}</td>
-                        <td>{instituicao.responsavelTec}</td>
-                        <td>{instituicao.cpfRT}</td>
-                        <td>{instituicao.logradouro}, n° {instituicao.numero} - {instituicao.bairro}, {instituicao.cidade} - {instituicao.uf}, CEP: {instituicao.cep}</td>
-                        <td>{instituicao.telefone}</td>
-                        <td>
-                          <Stack spacing={1} padding={0} direction='row'>
-                            <IconButton
-                              aria-label='edit'
-                              onClick={() => editar(instituicao.id)}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              aria-label='delete'
-                              onClick={() => excluir(instituicao.id)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Stack>
-                        </td>
-                      </tr>
-                    );
+                      return (
+                        <tr key={instituicao.id}>
+                          <td>{instituicao.razaoSocial}</td>
+                          <td>{exibirCnpj(instituicao.cnpj)}</td>
+                          <td>{usuarioEncontrado?.email ?? instituicao.email ?? 'E-mail não encontrado'}</td>
+                          <td>{instituicao.responsavelTec}</td>
+                          <td>{exibirCpf(instituicao.cpfRT)}</td>
+                          <td>{instituicao.logradouro}, n° {instituicao.numero} - {instituicao.bairro}, {instituicao.cidade} - {instituicao.uf}, CEP: {exibirCep(instituicao.cep)}</td>
+                          <td>{exibirTelefone(instituicao.telefone)}</td>
+                          <td>{usuarioEncontrado ? (usuarioEncontrado.status ? 'Ativo' : 'Inativo') : '-'}</td>
+                          <td>
+                            <Stack spacing={1} padding={0} direction='row'>
+                              <IconButton
+                                aria-label='edit'
+                                onClick={() => editar(instituicao.id)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                aria-label='delete'
+                                onClick={() => excluir(instituicao.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Stack>
+                          </td>
+                        </tr>
+                      );
                     })}
                   </tbody>
                 </table>

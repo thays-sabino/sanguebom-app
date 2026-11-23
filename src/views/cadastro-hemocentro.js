@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
-
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import '../custom.css';
 
@@ -12,6 +15,18 @@ import { mensagemSucesso, mensagemErro, mensagemAlert } from '../components/toas
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import {
+  cepCompleto,
+  cnpjCompleto,
+  limitarCep,
+  limitarCnpj,
+  limitarTelefone,
+  mascararCep,
+  mascararCnpj,
+  mascararTelefone,
+  somenteNumeros,
+  telefoneCompleto,
+} from '../services/mascaras';
 
 function CadastroHemocentros() {
   const { idParam } = useParams();
@@ -25,6 +40,8 @@ function CadastroHemocentros() {
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarSenhaRepeticao, setMostrarSenhaRepeticao] = useState(false);
   const [senhaRepeticao, setSenhaRepeticao] = useState('');
 
   // Campos de endereço direto no objeto hemocentro
@@ -36,18 +53,19 @@ function CadastroHemocentros() {
   const [cep, setCep] = useState('');
 
   const [dados, setDados] = useState(null);
+  const [usuario, setUsuario] = useState(null); // usuário (login) vinculado
 
   const senhasDiferentes = senhaRepeticao !== '' && senha !== senhaRepeticao;
 
   function preencher(hemocentro) {
     setRazaoSoial(hemocentro.razaoSocial ?? '');
-    setCnpj(hemocentro.cnpj ?? '');
-    setTelefone(hemocentro.telefone ?? '');
+    setCnpj(somenteNumeros(hemocentro.cnpj));
+    setTelefone(somenteNumeros(hemocentro.telefone));
     setEmail(hemocentro.email ?? '');
     setSenha(hemocentro.senha ?? '');
     setSenhaRepeticao(hemocentro.senhaRepeticao ?? '');
 
-    setCep(hemocentro.cep ?? '');
+    setCep(somenteNumeros(hemocentro.cep));
     setLogradouro(hemocentro.logradouro ?? '');
     setNumero(hemocentro.numero ?? '');
     setBairro(hemocentro.bairro ?? '');
@@ -56,70 +74,107 @@ function CadastroHemocentros() {
   }
 
   function inicializar() {
-    // Volta para a página anterior na edição
-        if (idParam != null){
-            navigate(-1);
-            return;
-        }
-    
-    const estaVazio = !razaoSocial && !cnpj && !telefone && !email && !senha && !senhaRepeticao && !cep && !logradouro && !numero && !bairro && !cidade && !uf;
-
-        if(estaVazio){ // Se esta vazio volta para a pagina anterior
-            navigate(-1);
-            return;
-        }
-    
     if (idParam == null) {
-      preencher({});
+      preencher({});      // cadastro novo: limpa tudo
     } else if (dados) {
-      preencher(dados);
+      preencher(dados);   // edição: volta aos valores originais
     }
   }
 
   async function salvar() {
-    if (!razaoSocial || !cnpj || !email || (idParam == null && !senha)) {
+    if (
+      !razaoSocial ||
+      !cnpj ||
+      !email ||
+      (idParam == null && !senha)
+    ) {
       mensagemAlert('Preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    if (!cnpjCompleto(cnpj)) {
+      mensagemAlert('CNPJ incompleto. Confira os números informados.');
+      return;
+    }
+
+    if (telefone && !telefoneCompleto(telefone)) {
+      mensagemAlert('Telefone incompleto. Confira os números informados.');
+      return;
+    }
+
+    if (cep && !cepCompleto(cep)) {
+      mensagemAlert('CEP incompleto. Confira os números informados.');
       return;
     }
 
     if (senha !== senhaRepeticao) return;
 
-    if (idParam == null) {
-      const data = { razaoSocial, cnpj, logradouro, numero, bairro, cidade, uf, cep, telefone, email, senha, senhaRepeticao, };
+    if (idParam != null && !dados) return;
 
-      await axios
-        .post(baseURL, JSON.stringify(data), {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function () {
-          mensagemSucesso(`Hemocentro ${razaoSocial} cadastrado com sucesso!`);
-          navigate(`/listagem-hemocentros`);
-        })
-        .catch(function (error) {
-          mensagemErro(
-            typeof error.response?.data === 'string' && error.response.data
-              ? error.response.data
-              : 'Erro ao cadastrar o hemocentro.'
-          );
-        });
-    } else {
-      const data = { ...dados, razaoSocial, cnpj, logradouro, numero, bairro, cidade, uf, cep, telefone, email, senha, senhaRepeticao, };
+    // E-mail e senha ficam na tabela de usuários (é de lá que as listagens leem);
+    // o hemocentro guarda apenas o idUsuario.
+    const login = { email, senha, senhaRepeticao };
 
-      await axios
-        .put(`${baseURL}/${idParam}`, JSON.stringify(data), {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function () {
-          mensagemSucesso(`Hemocentro ${razaoSocial} atualizado com sucesso!`);
-          navigate(`/listagem-hemocentros`);
-        })
-        .catch(function (error) {
-          mensagemErro(
-            typeof error.response?.data === 'string' && error.response.data
-              ? error.response.data
-              : 'Erro ao atualizar o hemocentro.'
-          );
-        });
+    const dadosHemocentro = {
+      razaoSocial,
+      cnpj,
+      logradouro,
+      numero,
+      bairro,
+      cidade,
+      uf,
+      cep,
+      telefone,
+    };
+
+    const cabecalho = { headers: { 'Content-Type': 'application/json' } };
+
+    try {
+      // 1) cria ou atualiza o usuário
+      let idUsuario = usuario?.id;
+
+      if (idUsuario != null) {
+        await axios.put(
+          `${BASE_URL}/usuarios/${idUsuario}`,
+          JSON.stringify({ ...usuario, ...login }),
+          cabecalho
+        );
+      } else {
+        const resposta = await axios.post(
+          `${BASE_URL}/usuarios`,
+          JSON.stringify({ ...login, perfil: 'hemocentro', status: true }),
+          cabecalho
+        );
+        idUsuario = resposta.data.id;
+      }
+
+      // 2) cria ou atualiza o registro
+      if (idParam == null) {
+        await axios.post(
+          baseURL,
+          JSON.stringify({ ...dadosHemocentro, idUsuario }),
+          cabecalho
+        );
+        mensagemSucesso(`Hemocentro ${razaoSocial} cadastrado com sucesso!`);
+      } else {
+        // Remove e-mail/senha que versões antigas gravavam dentro do registro
+        const { email: emailAntigo, senha: senhaAntiga, senhaRepeticao: repeticaoAntiga, ...semLogin } = dados;
+
+        await axios.put(
+          `${baseURL}/${idParam}`,
+          JSON.stringify({ ...semLogin, ...dadosHemocentro, idUsuario }),
+          cabecalho
+        );
+        mensagemSucesso(`Hemocentro ${razaoSocial} atualizado com sucesso!`);
+      }
+
+      navigate(`/listagem-hemocentros`);
+    } catch (error) {
+      mensagemErro(
+        typeof error.response?.data === 'string' && error.response.data
+          ? error.response.data
+          : 'Erro ao salvar o hemocentro.'
+      );
     }
   }
 
@@ -127,27 +182,24 @@ function CadastroHemocentros() {
     if (idParam == null) return;
 
     const response = await axios.get(`${baseURL}/${idParam}`);
-    const hemocentro = response.data;
+    const registro = response.data;
 
-    let emailAtual = hemocentro.email ?? '';
-    let senhaAtual = hemocentro.senha ?? '';
-    let repeticaoAtual = hemocentro.senhaRepeticao ?? '';
-
-    if ((!emailAtual || !senhaAtual) && hemocentro.idUsuario) {
-      const usuario = await axios.get(
-        `${BASE_URL}/usuarios/${hemocentro.idUsuario}`
+    // E-mail e senha vêm da tabela de usuários
+    let usuarioAtual = null;
+    if (registro.idUsuario) {
+      const resposta = await axios.get(
+        `${BASE_URL}/usuarios/${registro.idUsuario}`
       );
-      emailAtual = emailAtual || (usuario.data.email ?? '');
-      senhaAtual = senhaAtual || (usuario.data.senha ?? '');
-      repeticaoAtual =
-        repeticaoAtual || (usuario.data.senhaRepeticao ?? senhaAtual);
+      usuarioAtual = resposta.data;
     }
+    setUsuario(usuarioAtual);
 
+    // Registros antigos, sem usuário vinculado, ainda podem ter o e-mail dentro do próprio registro
     const completo = {
-      ...hemocentro,
-      email: emailAtual,
-      senha: senhaAtual,
-      senhaRepeticao: repeticaoAtual,
+      ...registro,
+      email: usuarioAtual?.email ?? registro.email ?? '',
+      senha: usuarioAtual?.senha ?? registro.senha ?? '',
+      senhaRepeticao: usuarioAtual?.senhaRepeticao ?? registro.senhaRepeticao ?? '',
     };
 
     setDados(completo);
@@ -161,7 +213,10 @@ function CadastroHemocentros() {
 
   return (
     <div className='container tema-principal'>
-      <Card title='Cadastro de Hemocentro'>
+      {/* Botão de voltar para a listagem de hemocentros */}
+      <IconButton aria-label='Voltar' onClick={() => navigate('/listagem-hemocentros')}>
+        <ArrowBackIcon />
+      </IconButton>      <Card title='Cadastro de Hemocentro'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
@@ -184,12 +239,13 @@ function CadastroHemocentros() {
                     <input
                       type='text'
                       id='inputCnpj'
-                      value={cnpj}
+                      value={mascararCnpj(cnpj)}
+                      placeholder='00.000.000/0000-00'
                       className='form-control'
                       name='cnpj'
-                      onChange={(e) => setCnpj(e.target.value)}
+                      onChange={(e) => setCnpj(limitarCnpj(e.target.value))}
                     />
-                </FormGroup>
+                  </FormGroup>
                 </div>
               </div>
 
@@ -212,16 +268,17 @@ function CadastroHemocentros() {
                     <input
                       type='text'
                       id='inputTelefone'
-                      value={telefone}
+                      value={mascararTelefone(telefone)}
+                      placeholder='(00) 0000-0000'
                       className='form-control'
                       name='telefone'
-                      onChange={(e) => setTelefone(e.target.value)}
+                      onChange={(e) => setTelefone(limitarTelefone(e.target.value))}
                     />
                   </FormGroup>
-                </div>  
+                </div>
               </div>
 
-               <hr className='my-4' />
+              <hr className='my-4' />
               <h5 className='secao-titulo'>Endereço</h5>
 
               <div className='row'>
@@ -230,10 +287,11 @@ function CadastroHemocentros() {
                     <input
                       type='text'
                       id='inputCep'
-                      value={cep}
+                      value={mascararCep(cep)}
+                      placeholder='00000-000'
                       className='form-control'
                       name='cep'
-                      onChange={(e) => setCep(e.target.value)}
+                      onChange={(e) => setCep(limitarCep(e.target.value))}
                     />
                   </FormGroup>
                 </div>
@@ -300,21 +358,30 @@ function CadastroHemocentros() {
                       onChange={(e) => setUf(e.target.value.toUpperCase())}
                     />
                   </FormGroup>
-                </div> 
+                </div>
               </div>
 
               <hr className='my-4' />
               <div className='row'>
                 <div className='col-md-6'>
                   <FormGroup label='Senha: *' htmlFor='inputSenha'>
-                    <input
-                      type='password'
-                      id='inputSenha'
-                      value={senha}
-                      className='form-control'
-                      name='senha'
-                      onChange={(e) => setSenha(e.target.value)}
-                    />
+                    <div className='input-group'>
+                      <input
+                        type={mostrarSenha ? 'text' : 'password'}
+                        id='inputSenha'
+                        value={senha}
+                        className='form-control'
+                        name='senha'
+                        onChange={(e) => setSenha(e.target.value)}
+                      />
+                      <button
+                        type='button'
+                        className='btn btn-outline-secondary'
+                        onClick={() => setMostrarSenha(!mostrarSenha)}
+                      >
+                        {mostrarSenha ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </button>
+                    </div>
                   </FormGroup>
                 </div>
                 <div className='col-md-6'>
@@ -322,14 +389,23 @@ function CadastroHemocentros() {
                     label='Repita a Senha: *'
                     htmlFor='inputSenhaRepeticao'
                   >
-                    <input
-                      type='password'
-                      id='inputSenhaRepeticao'
-                      value={senhaRepeticao}
-                      className='form-control'
-                      name='senhaRepeticao'
-                      onChange={(e) => setSenhaRepeticao(e.target.value)}
-                    />
+                    <div className='input-group'>
+                      <input
+                        type={mostrarSenhaRepeticao ? 'text' : 'password'}
+                        id='inputSenhaRepeticao'
+                        value={senhaRepeticao}
+                        className='form-control'
+                        name='senhaRepeticao'
+                        onChange={(e) => setSenhaRepeticao(e.target.value)}
+                      />
+                      <button
+                        type='button'
+                        className='btn btn-outline-secondary'
+                        onClick={() => setMostrarSenhaRepeticao(!mostrarSenhaRepeticao)}
+                      >
+                        {mostrarSenhaRepeticao ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </button>
+                    </div>
                     {senhasDiferentes && (
                       <small className='text-danger'>
                         As senhas não conferem.
@@ -337,7 +413,7 @@ function CadastroHemocentros() {
                     )}
                   </FormGroup>
                 </div>
-              </div>    
+              </div>
               <Stack spacing={1} padding={1} direction='row'>
                 <button
                   onClick={salvar}

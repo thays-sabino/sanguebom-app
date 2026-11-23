@@ -28,6 +28,7 @@ import CadastroEstoques from './views/cadastro-estoque';
 
 import ListagemSolicitacoes from './views/listagem-solicitacoes';
 import CadastroSolicitacoes from './views/cadastro-solicitacoes';
+import RespostaSolicitacao from './views/resposta-solicitacao';
 
 import ListagemDoacoes from './views/listagem-doacoes';
 import CadastroDoacoes from './views/cadastro-doacoes';
@@ -38,7 +39,7 @@ function Rotas(props) {
   return (
     <BrowserRouter>
       <Routes>
-        
+
         {/* Página Inicial */}
         <Route
           path='/'
@@ -168,6 +169,10 @@ function Rotas(props) {
         <Route
           path='/cadastro-solicitacoes/:idParam'
           element={<CadastroSolicitacoes />}
+        />
+        <Route
+          path='/resposta-solicitacao/:idParam'
+          element={<RespostaSolicitacao />}
         />
 
         {/* Doações */}

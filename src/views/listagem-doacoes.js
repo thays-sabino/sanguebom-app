@@ -33,6 +33,14 @@ function ListagemDoacoes() {
   const [doadores, setDoadores] = useState([]);
   const [tipoS, setTipoS] = useState([]);
 
+  // Único hemocentro do sistema (Juiz de Fora)
+  const hemocentro = hemocentros[0] ?? null;
+
+  // Exibe apenas as doações do hemocentro
+  const doacoesDoHemocentro = hemocentro
+    ? doacoes.filter((d) => String(d.idHemocentro) === String(hemocentro.id))
+    : [];
+
   useEffect(() => {
     axios.get(baseURL).then((response) => {
       setDoacoes(response.data);
@@ -50,11 +58,6 @@ function ListagemDoacoes() {
       setTipoS(response.data);
     });
   }, []);
-
-  function nomeHemocentro(idHemocentro) {
-    const hemocentro = hemocentros.find((h) => String(h.id) === String(idHemocentro));
-    return hemocentro ? hemocentro.razaoSocial : '';
-  }
 
   function nomeDoador(idDoador) {
     const doador = doadores.find((d) => String(d.id) === String(idDoador));
@@ -87,6 +90,11 @@ function ListagemDoacoes() {
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
+              {hemocentro && (
+                <p>
+                  <strong>Hemocentro:</strong> {hemocentro.razaoSocial}
+                </p>
+              )}
               <button
                 type='button'
                 className='btn btn-danger'
@@ -98,8 +106,6 @@ function ListagemDoacoes() {
                 <table className='table table-hover'>
                   <thead>
                     <tr>
-                      <th scope='col'>ID</th>
-                      <th scope='col'>Hemocentro</th>
                       <th scope='col'>Doador</th>
                       <th scope='col'>Data</th>
                       <th scope='col'>Tipo Sanguíneo</th>
@@ -108,10 +114,8 @@ function ListagemDoacoes() {
                     </tr>
                   </thead>
                   <tbody>
-                    {doacoes.map((doacao) => (
+                    {doacoesDoHemocentro.map((doacao) => (
                       <tr key={doacao.id}>
-                        <td>{doacao.id}</td>
-                        <td>{nomeHemocentro(doacao.idHemocentro)}</td>
                         <td>{nomeDoador(doacao.idDoador)}</td>
                         <td>{doacao.dtDoacao}</td>
                         <td>{nomeTipoSanguineo(doacao.idDoador)}</td>
